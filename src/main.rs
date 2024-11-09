@@ -1,5 +1,8 @@
+use clap::Parser;
+use svg_optimizer::Optimizer;
 fn main() {
-    println!("Hello, world!");
+    let optimizer = Optimizer::parse();
+    optimizer.optimize();
 }
 
 #[test]
