@@ -1,4 +1,4 @@
-use crate::ParserError;
+use crate::errors::ParserError;
 use svg::node::element::tag::{Type, SVG};
 use svg::parser::Event;
 use svg::Document;

@@ -1,5 +1,9 @@
+mod errors;
+mod optimizer;
+mod parser;
+
 use clap::Parser;
-use svg_optimizer::Optimizer;
+use optimizer::Optimizer;
 
 fn main() {
     let optimizer = Optimizer::parse();

@@ -1,7 +1,5 @@
-mod errors;
-mod parser;
-
-use errors::ParserError;
+use crate::errors::ParserError;
+use crate::parser::Parser;
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
@@ -16,7 +14,7 @@ impl Optimizer {
         let mut file = String::new();
         let svg_source = svg::open(file_name, &mut file)?;
 
-        let mut parser = parser::Parser::new(svg_source);
+        let mut parser = Parser::new(svg_source);
         let document = parser.parse_document()?;
 
         svg::save(format!("opt_{}", file_name), &document)?;
