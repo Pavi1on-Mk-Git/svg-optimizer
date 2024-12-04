@@ -2,7 +2,7 @@
 
 First, setup Rust and Cargo according to the [official instruction](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
-To use commands defined in justfile, install [Just](https://github.com/casey/just).
+To use commands defined in justfile, install [Just](https://github.com/casey/just#Installation).
 
 Clone the repository: `git clone https://gitlab-stud.elka.pw.edu.pl/jprobosz/24z-zpr-svg-optimizer.git`.
 
