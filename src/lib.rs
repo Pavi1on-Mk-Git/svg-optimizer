@@ -1,5 +1,5 @@
-pub mod errors;
-pub mod parser;
+mod errors;
+mod parser;
 
 use errors::ParserError;
 
@@ -19,7 +19,9 @@ impl Optimizer {
         let mut parser = parser::Parser::new(svg_source);
         let document = parser.parse_document()?;
 
-        svg::save(file_name, &document)?;
+        let mut output_file_name = "opt_".to_owned();
+        output_file_name.push_str(file_name);
+        svg::save(output_file_name, &document)?;
         Ok(())
     }
 

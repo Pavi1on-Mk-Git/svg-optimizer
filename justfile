@@ -9,5 +9,9 @@ run +ARGS:
 test:
     cargo test
 
+lint:
+    cargo fmt
+    cargo clippy
+
 docs:
     cargo doc --no-deps --lib --open
