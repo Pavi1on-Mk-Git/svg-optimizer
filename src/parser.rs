@@ -3,6 +3,8 @@ use svg::node::element::tag::{Type, SVG};
 use svg::parser::Event;
 use svg::Document;
 
+/// Parses input stream of events provided by svg library into the output tree format of the svg library.
+/// Currently only supports tag <svg>.
 pub struct Parser<'a> {
     source: svg::Parser<'a>,
     curr_event: Option<Event<'a>>,

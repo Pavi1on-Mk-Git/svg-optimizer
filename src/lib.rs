@@ -3,7 +3,7 @@ mod parser;
 
 use errors::ParserError;
 
-/// SVG file optimizer
+/// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
 #[command(version, about)]
 pub struct Optimizer {
