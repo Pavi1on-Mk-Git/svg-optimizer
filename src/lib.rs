@@ -14,15 +14,12 @@ pub struct Optimizer {
 impl Optimizer {
     fn apply_optimizations(&self, file_name: &str) -> Result<(), ParserError> {
         let mut file = String::new();
-
         let svg_source = svg::open(file_name, &mut file)?;
 
         let mut parser = parser::Parser::new(svg_source);
-
         let document = parser.parse_document()?;
 
         svg::save(file_name, &document)?;
-
         Ok(())
     }
 

@@ -48,7 +48,6 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
     #[test]
@@ -83,7 +82,6 @@ mod tests {
     #[test]
     fn test_no_start_tag() {
         let test_string = r#"
-            <rect width="300" height="100" x="10" y="10" style="fill:rgb(0,0,255);stroke-width:3;stroke:red" />
             </svg>
             "#;
 
@@ -100,7 +98,6 @@ mod tests {
     fn test_no_end_tag() {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="100" x="10" y="10" style="fill:rgb(0,0,255);stroke-width:3;stroke:red" />
             "#;
 
         let source = svg::Parser::new(test_string);
