@@ -19,9 +19,7 @@ impl Optimizer {
         let mut parser = parser::Parser::new(svg_source);
         let document = parser.parse_document()?;
 
-        let mut output_file_name = "opt_".to_owned();
-        output_file_name.push_str(file_name);
-        svg::save(output_file_name, &document)?;
+        svg::save(format!("opt_{}", file_name), &document)?;
         Ok(())
     }
 
