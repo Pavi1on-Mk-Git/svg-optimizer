@@ -1,4 +1,4 @@
-### Instalacja i uruchomienie projektu
+### Setup of the project
 
 First, setup Rust and Cargo according to the [official instruction](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
