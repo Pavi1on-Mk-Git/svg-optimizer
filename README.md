@@ -4,6 +4,8 @@ First, setup Rust and Cargo according to the [official instruction](https://doc.
 
 To use commands defined in justfile, install [Just](https://github.com/casey/just).
 
-Compile and run the project via `just run ARGS` or `cargo run -- ARGS`. Replace `ARGS` with command line arguments for the program.
+Clone the repository: `git clone https://gitlab-stud.elka.pw.edu.pl/jprobosz/24z-zpr-svg-optimizer.git`.
+
+From the main directory of the project, compile and run the project via `just run ARGS` or `cargo run -- ARGS`. Replace `ARGS` with command line arguments for the program.
 
 Example: `just run example.svg` should create a `opt_example.svg` file with just the `<svg>` tag from the original file.
