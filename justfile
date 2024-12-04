@@ -14,4 +14,4 @@ lint:
     cargo clippy
 
 docs:
-    cargo doc --no-deps --lib --open
+    cargo doc --no-deps --document-private-items --open
