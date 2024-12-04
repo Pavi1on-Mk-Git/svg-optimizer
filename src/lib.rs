@@ -1,11 +1,10 @@
-use clap::Parser;
-use std::io::Error;
-use svg::node::element::tag::{Type, SVG};
-use svg::parser::Event;
-use svg::Document;
+pub mod errors;
+pub mod parser;
+
+use errors::ParserError;
 
 /// SVG file optimizer
-#[derive(Parser)]
+#[derive(clap::Parser)]
 #[command(version, about)]
 pub struct Optimizer {
     /// Names of the files to optimize
@@ -13,24 +12,14 @@ pub struct Optimizer {
 }
 
 impl Optimizer {
-    fn apply_optimizations(&self, file_name: &str) -> Result<(), Error> {
+    fn apply_optimizations(&self, file_name: &str) -> Result<(), ParserError> {
         let mut file = String::new();
 
-        let mut document: Document = Document::new();
+        let svg_source = svg::open(file_name, &mut file)?;
 
-        for event in svg::open(file_name, &mut file)? {
-            match event {
-                Event::Tag(SVG, Type::Start, attributes) => {
-                    for (name, val) in attributes {
-                        document = document.set(name, val);
-                    }
-                }
-                Event::Tag(SVG, Type::End, _) => {
-                    break;
-                }
-                _ => {}
-            }
-        }
+        let mut parser = parser::Parser::new(svg_source);
+
+        let document = parser.parse_document()?;
 
         svg::save(file_name, &document)?;
 
@@ -40,7 +29,7 @@ impl Optimizer {
     pub fn optimize(&self) {
         for file_name in self.file_names.iter() {
             if let Err(opt_error) = self.apply_optimizations(file_name.as_str()) {
-                println!("An error occurred: {:?}", opt_error);
+                println!("An error has occurred: {}", opt_error);
             }
         }
     }
