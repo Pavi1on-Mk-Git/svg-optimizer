@@ -1,5 +1,6 @@
 use crate::errors::ParserError;
 use crate::parser::Parser;
+use std::path::Path;
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
@@ -10,14 +11,19 @@ pub struct Optimizer {
 }
 
 impl Optimizer {
-    fn apply_optimizations(&self, file_name: &str) -> Result<(), ParserError> {
+    fn apply_optimizations(&self, file_path: &str) -> Result<(), ParserError> {
+        let input_path = Path::new(file_path);
+
         let mut file = String::new();
-        let svg_source = svg::open(file_name, &mut file)?;
+        let svg_source = svg::open(input_path, &mut file)?;
 
         let mut parser = Parser::new(svg_source);
         let document = parser.parse_document()?;
 
-        svg::save(format!("opt_{}", file_name), &document)?;
+        svg::save(
+            format!("opt_{}", input_path.file_name().unwrap().to_str().unwrap()),
+            &document,
+        )?;
         Ok(())
     }
 
