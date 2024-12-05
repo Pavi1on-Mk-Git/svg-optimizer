@@ -38,12 +38,16 @@ impl<'a> Parser<'a> {
 
                     match &self.curr_event {
                         Some(Event::Tag(SVG, Type::End, _)) => return Ok(document),
-                        None => return Err(ParserError::new("No end tag")),
+                        None => {
+                            return Err(ParserError::MissingEndTag {
+                                tag_type: SVG.into(),
+                            })
+                        }
                         _ => {}
                     }
                 }
             }
-            _ => Err(ParserError::new("No start tag")),
+            _ => Err(ParserError::MissingSVGStart),
         }
     }
 }
