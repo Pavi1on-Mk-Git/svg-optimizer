@@ -1,35 +1,37 @@
 use crate::errors::ParserError;
 use crate::parser::Parser;
-use std::path::Path;
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
-#[command(version, about)]
+#[command(version)]
 pub struct Optimizer {
     /// Names of the files to optimize
-    file_names: Vec<String>,
+    file_names: Vec<PathBuf>,
 }
 
 impl Optimizer {
-    fn apply_optimizations(&self, file_path: &str) -> Result<(), ParserError> {
-        let input_path = Path::new(file_path);
-
+    fn apply_optimizations(&self, file_path: &Path) -> Result<(), ParserError> {
         let mut file = String::new();
-        let svg_source = svg::open(input_path, &mut file)?;
+        let svg_source = svg::open(file_path, &mut file)?;
 
         let mut parser = Parser::new(svg_source);
         let document = parser.parse_document()?;
 
-        svg::save(
-            format!("opt_{}", input_path.file_name().unwrap().to_str().unwrap()),
-            &document,
-        )?;
+        let new_file_name = {
+            let mut new_file_string = OsString::from("opt_");
+            new_file_string.push(file_path.file_name().unwrap());
+            new_file_string
+        };
+
+        svg::save(new_file_name, &document)?;
         Ok(())
     }
 
     pub fn optimize(&self) {
         for file_name in self.file_names.iter() {
-            if let Err(opt_error) = self.apply_optimizations(file_name.as_str()) {
+            if let Err(opt_error) = self.apply_optimizations(file_name) {
                 println!("An error has occurred: {}", opt_error);
             }
         }
