@@ -1,5 +1,5 @@
 use crate::errors::ParserError;
-use crate::parser::Parser;
+use crate::parser::{Parser, ParserResult};
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::Write;
@@ -19,7 +19,7 @@ impl Optimizer {
         let svg_source = svg::open(file_path, &mut read_buffer)?;
 
         let mut parser = Parser::new(svg_source);
-        let (document, strings) = parser.parse_document()?;
+        let ParserResult(document, pre, post) = parser.parse_document()?;
 
         let new_file_name = {
             let mut new_file_string = OsString::from("opt_");
@@ -29,10 +29,13 @@ impl Optimizer {
 
         let mut file = File::create(new_file_name)?;
 
-        for string in strings {
+        for string in pre {
             file.write_fmt(format_args!("{}\n", string))?;
         }
-        file.write_all(&document.to_string().into_bytes())?;
+        file.write_fmt(format_args!("{}\n", &document.to_string()))?;
+        for string in post {
+            file.write_fmt(format_args!("{}\n", string))?;
+        }
 
         Ok(())
     }

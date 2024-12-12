@@ -13,6 +13,8 @@ pub struct Parser<'a> {
 
 type NodeResult = Result<Option<Box<dyn Node>>, ParserError>;
 
+pub struct ParserResult(pub Box<dyn Node>, pub Vec<String>, pub Vec<String>);
+
 macro_rules! add_parsed {
     ($document:ident, $($parse_call:expr),*) => {
         $(
@@ -116,30 +118,42 @@ impl<'a> Parser<'a> {
 
     parse_element!(parse_svg, SVG, SVG, parse_basic_shape);
 
-    pub fn parse_document(&mut self) -> Result<(Box<dyn Node>, Vec<String>), ParserError> {
-        let mut strings_to_keep: Vec<String> = Vec::new();
+    pub fn parse_document(&mut self) -> Result<ParserResult, ParserError> {
+        let mut pre_svg_strings: Vec<String> = Vec::new();
+        let mut post_svg_strings: Vec<String> = Vec::new();
 
-        loop {
-            if let Some(event) = &self.curr_event {
-                match event {
-                    Event::Error(error) => return Err(error.into()),
-                    Event::Comment(text) => strings_to_keep.push((*text).into()),
-                    Event::Declaration(text) => strings_to_keep.push((*text).into()),
-                    Event::Instruction(text) => strings_to_keep.push((*text).into()),
-                    Event::Text(_) => return Err(ParserError::UnexpectedText),
-                    Event::Tag(..) => {
-                        if let Some(svg) = self.parse_svg()? {
-                            return Ok((svg, strings_to_keep));
-                        } else {
-                            return Err(ParserError::MissingSVGStart);
+        while let Some(event) = &self.curr_event {
+            match event {
+                Event::Error(error) => return Err(error.into()),
+                Event::Comment(text) => pre_svg_strings.push((*text).into()),
+                Event::Declaration(text) => pre_svg_strings.push((*text).into()),
+                Event::Instruction(text) => pre_svg_strings.push((*text).into()),
+                Event::Text(_) => return Err(ParserError::UnexpectedText),
+                Event::Tag(..) => {
+                    if let Some(svg) = self.parse_svg()? {
+                        self.next_event();
+
+                        while let Some(event) = &self.curr_event {
+                            match event {
+                                Event::Error(error) => return Err(error.into()),
+                                Event::Comment(text) => post_svg_strings.push((*text).into()),
+                                Event::Declaration(text) => post_svg_strings.push((*text).into()),
+                                Event::Instruction(text) => post_svg_strings.push((*text).into()),
+                                Event::Text(_) => return Err(ParserError::UnexpectedText),
+                                Event::Tag(..) => return Err(ParserError::PostSVGTags),
+                            }
+                            self.next_event();
                         }
+
+                        return Ok(ParserResult(svg, pre_svg_strings, post_svg_strings));
+                    } else {
+                        return Err(ParserError::MissingSVGStart);
                     }
                 }
-            } else {
-                return Err(ParserError::MissingSVGStart);
             }
             self.next_event();
         }
+        Err(ParserError::MissingSVGStart)
     }
 }
 
@@ -158,9 +172,10 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let (document, strings) = parser.parse_document()?;
+        let ParserResult(document, pre, post) = parser.parse_document()?;
 
-        assert!(strings.is_empty());
+        assert!(pre.is_empty());
+        assert!(post.is_empty());
 
         let attrs = document.get_attributes().unwrap();
 
@@ -187,9 +202,10 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let (document, strings) = parser.parse_document()?;
+        let ParserResult(document, pre, post) = parser.parse_document()?;
 
-        assert!(strings.is_empty());
+        assert!(pre.is_empty());
+        assert!(post.is_empty());
 
         let attrs = document.get_attributes().unwrap();
 
