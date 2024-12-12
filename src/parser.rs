@@ -2,7 +2,7 @@ use crate::errors::ParserError;
 use svg::node::element::tag::Type;
 use svg::node::element::*;
 use svg::parser::Event;
-use svg::{Document, Node};
+use svg::Node;
 
 /// Parses input stream of events provided by svg library into the output tree format of the svg library.
 /// Currently only supports tag &lt;svg&gt;.
@@ -114,38 +114,31 @@ impl<'a> Parser<'a> {
 
     parse_element_group!(parse_basic_shape, parse_element, parse_ellipse);
 
-    pub fn parse_document(&mut self) -> Result<Document, ParserError> {
-        match &self.curr_event {
-            Some(Event::Tag(tag::SVG, Type::Start, attr)) => {
-                let mut document = Document::new();
-                for (key, val) in attr {
-                    document = document.set(key, val.clone());
-                }
+    parse_element!(parse_svg, SVG, SVG, parse_basic_shape);
 
-                loop {
-                    self.next_event();
+    pub fn parse_document(&mut self) -> Result<(Box<dyn Node>, Vec<String>), ParserError> {
+        let mut strings_to_keep: Vec<String> = Vec::new();
 
-                    add_parsed!(document, self.parse_basic_shape());
-
-                    match &self.curr_event {
-                        Some(Event::Tag(tag::SVG, Type::End, _)) => return Ok(document),
-                        None => {
-                            return Err(ParserError::MissingEndTag {
-                                tag_type: tag::SVG.into(),
-                            })
+        loop {
+            if let Some(event) = &self.curr_event {
+                match event {
+                    Event::Error(error) => return Err(error.into()),
+                    Event::Comment(text) => strings_to_keep.push((*text).into()),
+                    Event::Declaration(text) => strings_to_keep.push((*text).into()),
+                    Event::Instruction(text) => strings_to_keep.push((*text).into()),
+                    Event::Text(_) => return Err(ParserError::UnexpectedText),
+                    Event::Tag(..) => {
+                        if let Some(svg) = self.parse_svg()? {
+                            return Ok((svg, strings_to_keep));
+                        } else {
+                            return Err(ParserError::MissingSVGStart);
                         }
-                        _ => {}
                     }
                 }
+            } else {
+                return Err(ParserError::MissingSVGStart);
             }
-            Some(Event::Tag(tag::SVG, Type::Empty, attr)) => {
-                let mut document = Document::new();
-                for (key, val) in attr {
-                    document = document.set(key, val.clone());
-                }
-                Ok(document)
-            }
-            _ => Err(ParserError::MissingSVGStart),
+            self.next_event();
         }
     }
 }
@@ -165,7 +158,9 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let document = parser.parse_document()?;
+        let (document, strings) = parser.parse_document()?;
+
+        assert!(strings.is_empty());
 
         let attrs = document.get_attributes().unwrap();
 
@@ -192,7 +187,9 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let document = parser.parse_document()?;
+        let (document, strings) = parser.parse_document()?;
+
+        assert!(strings.is_empty());
 
         let attrs = document.get_attributes().unwrap();
 
