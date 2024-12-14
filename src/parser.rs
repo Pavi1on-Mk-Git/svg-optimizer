@@ -1,6 +1,8 @@
 use crate::errors::ParserError;
+use svg::node::element;
+use svg::node::element::tag;
 use svg::node::element::tag::Type;
-use svg::node::{element::*, Blob, Comment};
+use svg::node::{Blob, Comment, Text};
 use svg::parser::Event;
 use svg::Node;
 
@@ -14,11 +16,11 @@ pub struct Parser<'a> {
 type NodeResult = Result<Option<Box<dyn Node>>, ParserError>;
 
 macro_rules! parse_element {
-    ($fn_name:ident, $tag:ident, $element:ty, $($parse_fn:ident),*) => {
+    ($fn_name:ident, $tag:ident, $element:ident, $($parse_fn:ident),*) => {
         fn $fn_name(&mut self) -> NodeResult {
             match &self.curr_event {
                 Some(Event::Tag(tag::$tag, Type::Start, attr)) => {
-                    let mut element = <$element>::new();
+                    let mut element = element::$element::new();
                     for (key, val) in attr {
                         element = element.set(key, val.clone());
                     }
@@ -50,7 +52,7 @@ macro_rules! parse_element {
                     }
                 }
                 Some(Event::Tag(tag::$tag, Type::Empty, attr)) => {
-                    let mut element = <$element>::new();
+                    let mut element = element::$element::new();
                     for (key, val) in attr {
                         element = element.set(key, val.clone());
                     }
