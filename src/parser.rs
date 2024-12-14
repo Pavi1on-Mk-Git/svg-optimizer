@@ -1,6 +1,6 @@
 use crate::errors::ParserError;
 use svg::node::element::tag::Type;
-use svg::node::element::*;
+use svg::node::{element::*, Blob, Comment};
 use svg::parser::Event;
 use svg::Node;
 
@@ -12,18 +12,6 @@ pub struct Parser<'a> {
 }
 
 type NodeResult = Result<Option<Box<dyn Node>>, ParserError>;
-
-pub struct ParserResult(pub Box<dyn Node>, pub Vec<String>, pub Vec<String>);
-
-macro_rules! add_parsed {
-    ($document:ident, $($parse_call:expr),*) => {
-        $(
-            if let Some(node) = $parse_call? {
-                $document = $document.add(node)
-            }
-        )*
-    };
-}
 
 macro_rules! parse_element {
     ($fn_name:ident, $tag:ident, $element:ty, $($parse_fn:ident),*) => {
@@ -38,7 +26,15 @@ macro_rules! parse_element {
                     loop {
                         self.next_event();
 
-                        $(add_parsed!(element, self.$parse_fn());)*
+                        if let Some(node) = self.parse_non_tag()? {
+                            element = element.add(node);
+                        }
+
+                        $(
+                            if let Some(node) = self.$parse_fn()? {
+                                element = element.add(node)
+                            }
+                        )*
 
                         match &self.curr_event {
                             Some(Event::Tag(tag::$tag, Type::End, _)) => {
@@ -69,6 +65,10 @@ macro_rules! parse_element {
 macro_rules! parse_element_group {
     ($fn_name:ident, $($parse_fn:ident),*) => {
         fn $fn_name(&mut self) -> NodeResult {
+            if let Some(node) = self.parse_non_tag()? {
+                return Ok(Some(node));
+            }
+
             $(
                 if let Some(node) = self.$parse_fn()? {
                     return Ok(Some(node));
@@ -94,12 +94,33 @@ impl<'a> Parser<'a> {
         self.curr_event = self.source.next();
     }
 
+    fn parse_non_tag(&mut self) -> NodeResult {
+        if let Some(event) = &self.curr_event {
+            match event {
+                Event::Declaration(text) | Event::Instruction(text) => {
+                    Ok(Some(Box::new(Blob::new(*text))))
+                }
+                Event::Comment(text) => Ok(Some(Box::new(Comment::new(
+                    text.strip_prefix("<!--")
+                        .and_then(|txt| txt.strip_suffix("-->"))
+                        .unwrap()
+                        .trim(),
+                )))),
+                Event::Text(text) => Ok(Some(Box::new(Text::new(*text)))),
+                Event::Error(error) => Err(error.into()),
+                _ => Ok(None),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
     parse_element_group!(parse_animation_element,);
 
     parse_element_group!(parse_descriptive_element,);
 
     parse_element!(
-        parse_element,
+        parse_circle,
         Circle,
         Circle,
         parse_animation_element,
@@ -114,46 +135,25 @@ impl<'a> Parser<'a> {
         parse_descriptive_element
     );
 
-    parse_element_group!(parse_basic_shape, parse_element, parse_ellipse);
+    parse_element_group!(parse_basic_shape, parse_circle, parse_ellipse);
 
     parse_element!(parse_svg, SVG, SVG, parse_basic_shape);
 
-    pub fn parse_document(&mut self) -> Result<ParserResult, ParserError> {
-        let mut pre_svg_strings: Vec<String> = Vec::new();
-        let mut post_svg_strings: Vec<String> = Vec::new();
+    pub fn parse_document(&mut self) -> Result<Vec<Box<dyn Node>>, ParserError> {
+        let mut nodes = Vec::new();
 
-        while let Some(event) = &self.curr_event {
-            match event {
-                Event::Error(error) => return Err(error.into()),
-                Event::Comment(text) => pre_svg_strings.push((*text).into()),
-                Event::Declaration(text) => pre_svg_strings.push((*text).into()),
-                Event::Instruction(text) => pre_svg_strings.push((*text).into()),
-                Event::Text(_) => return Err(ParserError::UnexpectedText),
-                Event::Tag(..) => {
-                    if let Some(svg) = self.parse_svg()? {
-                        self.next_event();
-
-                        while let Some(event) = &self.curr_event {
-                            match event {
-                                Event::Error(error) => return Err(error.into()),
-                                Event::Comment(text) => post_svg_strings.push((*text).into()),
-                                Event::Declaration(text) => post_svg_strings.push((*text).into()),
-                                Event::Instruction(text) => post_svg_strings.push((*text).into()),
-                                Event::Text(_) => return Err(ParserError::UnexpectedText),
-                                Event::Tag(..) => return Err(ParserError::PostSVGTags),
-                            }
-                            self.next_event();
-                        }
-
-                        return Ok(ParserResult(svg, pre_svg_strings, post_svg_strings));
-                    } else {
-                        return Err(ParserError::MissingSVGStart);
-                    }
-                }
+        while self.curr_event.is_some() {
+            if let Some(node) = self.parse_non_tag()? {
+                nodes.push(node);
             }
+
+            if let Some(node) = self.parse_svg()? {
+                nodes.push(node);
+            }
+
             self.next_event();
         }
-        Err(ParserError::MissingSVGStart)
+        Ok(nodes)
     }
 }
 
@@ -162,7 +162,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_svg() -> Result<(), ParserError> {
+    fn test_parse_tag() -> Result<(), ParserError> {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
             </svg>
@@ -172,10 +172,11 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let ParserResult(document, pre, post) = parser.parse_document()?;
+        let nodes = parser.parse_document()?;
 
-        assert!(pre.is_empty());
-        assert!(post.is_empty());
+        assert_eq!(nodes.len(), 1);
+
+        let document = &nodes[0];
 
         let attrs = document.get_attributes().unwrap();
 
@@ -193,7 +194,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_oneline_svg() -> Result<(), ParserError> {
+    fn test_parse_oneline_tag() -> Result<(), ParserError> {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg"/>
             "#;
@@ -202,10 +203,11 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let ParserResult(document, pre, post) = parser.parse_document()?;
+        let nodes = parser.parse_document()?;
 
-        assert!(pre.is_empty());
-        assert!(post.is_empty());
+        assert_eq!(nodes.len(), 1);
+
+        let document = &nodes[0];
 
         let attrs = document.get_attributes().unwrap();
 
@@ -223,7 +225,7 @@ mod tests {
     }
 
     #[test]
-    fn test_no_start_tag() {
+    fn test_no_start_tag() -> Result<(), ParserError> {
         let test_string = r#"
             </svg>
             "#;
@@ -232,13 +234,15 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let document = parser.parse_document();
+        let nodes = parser.parse_document()?;
 
-        assert!(document.is_err());
+        assert!(nodes.is_empty());
+
+        Ok(())
     }
 
     #[test]
-    fn test_svg_no_end_tag() {
+    fn test_no_end_tag() {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
             "#;
@@ -247,76 +251,40 @@ mod tests {
 
         let mut parser = Parser::new(source);
 
-        let document = parser.parse_document();
+        let nodes = parser.parse_document();
 
-        assert!(document.is_err());
+        assert!(nodes.is_err());
     }
 
     #[test]
-    fn test_parse_non_svg() -> Result<(), ParserError> {
+    fn test_parse_non_tag() -> Result<(), ParserError> {
         let test_string = r#"
-            <circle cx="50" cy="50" r="50">
-            </circle>
+            <?xml version="1.0" encoding="utf-8"?>
+            <!--Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In .SVG Version: 6.00 Build 0)-->
+            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
             "#;
 
         let source = svg::Parser::new(test_string);
+
         let mut parser = Parser::new(source);
 
-        let element = parser.parse_element()?.unwrap();
+        let nodes = parser.parse_document()?;
 
-        let attrs = element.get_attributes().unwrap();
+        assert_eq!(nodes.len(), 3);
 
-        assert_eq!(attrs.len(), 3);
-
-        assert!(attrs.contains_key("cx"));
-        assert!(attrs.contains_key("cy"));
-        assert!(attrs.contains_key("r"));
-
-        assert_eq!(*attrs.get("cx").unwrap(), "50");
-        assert_eq!(*attrs.get("cy").unwrap(), "50");
-        assert_eq!(*attrs.get("r").unwrap(), "50");
+        assert_eq!(
+            nodes[0].to_string(),
+            r#"<?xml version="1.0" encoding="utf-8"?>"#
+        );
+        assert_eq!(
+            nodes[1].to_string(),
+            r#"<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In .SVG Version: 6.00 Build 0) -->"#
+        );
+        assert_eq!(
+            nodes[2].to_string(),
+            r#"<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">"#
+        );
 
         Ok(())
-    }
-
-    #[test]
-    fn test_parse_oneline_non_svg() -> Result<(), ParserError> {
-        let test_string = r#"
-            <circle cx="50" cy="50" r="50"/>
-            "#;
-
-        let source = svg::Parser::new(test_string);
-        let mut parser = Parser::new(source);
-
-        let element = parser.parse_element()?.unwrap();
-
-        let attrs = element.get_attributes().unwrap();
-
-        assert_eq!(attrs.len(), 3);
-
-        assert!(attrs.contains_key("cx"));
-        assert!(attrs.contains_key("cy"));
-        assert!(attrs.contains_key("r"));
-
-        assert_eq!(*attrs.get("cx").unwrap(), "50");
-        assert_eq!(*attrs.get("cy").unwrap(), "50");
-        assert_eq!(*attrs.get("r").unwrap(), "50");
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_no_end_tag_no_svg() {
-        let test_string = r#"
-            <circle cx="50" cy="50" r="50">
-            "#;
-
-        let source = svg::Parser::new(test_string);
-
-        let mut parser = Parser::new(source);
-
-        let element = parser.parse_element();
-
-        assert!(element.is_err());
     }
 }
