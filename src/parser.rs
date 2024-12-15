@@ -1,9 +1,8 @@
 use crate::errors::ParserError;
-use std::cell::RefCell;
 use svg::node::element;
 use svg::node::element::tag;
 use svg::node::element::tag::Type;
-use svg::node::{Blob, Comment};
+use svg::node::{Blob, Comment, Text};
 use svg::parser::Event;
 use svg::Node;
 
@@ -14,7 +13,12 @@ pub struct Parser<'a> {
     curr_event: Option<Event<'a>>,
 }
 
-type NodeResult = Result<Option<Box<dyn Node>>, ParserError>;
+type MaybeNode = Option<Box<dyn Node>>;
+type NodeResult = Result<MaybeNode, ParserError>;
+
+macro_rules! noop {
+    ($x:ident) => {};
+}
 
 macro_rules! parse_element {
     ($fn_name:ident, $tag:ident, $element:ident, $($parse_fn:ident),* $(once: $parse_once_fn:ident)?) => {
@@ -22,7 +26,12 @@ macro_rules! parse_element {
             match &self.curr_event {
                 Some(Event::Tag(tag::$tag, Type::Start, attr)) => {
                     let mut element = element::$element::new();
-                    let once_node: RefCell<Option<Box<dyn Node>>> = RefCell::new(None);
+
+                    $(
+                        noop!($parse_once_fn);
+                        let mut once_node: Option<Box<dyn Node>> = None;
+                    )?
+
 
                     for (key, val) in attr {
                         element = element.set(key, val.clone());
@@ -36,30 +45,43 @@ macro_rules! parse_element {
                         }
 
                         $(
-                            if let Some(node) = self.$parse_fn()? {
+                            else if let Some(node) = self.$parse_fn()? {
                                 element = element.add(node)
                             }
                         )*
 
                         $(
-                            once_node.replace(once_node.take().or(self.$parse_once_fn()?));
+                            else if let Some(node) = self.$parse_once_fn()? {
+                                if once_node.is_some() {
+                                    return Err(ParserError::RepeatedOnceTag);
+                                }
+                                once_node = Some(node);
+                            }
                         )?
 
-                        match &self.curr_event {
-                            Some(Event::Tag(tag::$tag, Type::End, _)) => {
-                                if let Some(node) = once_node.take() {
-                                    element = element.add(node);
-                                }
+                        else {
+                            match &self.curr_event {
+                                Some(Event::Tag(tag::$tag, Type::End, _)) => {
+                                    $(
+                                        noop!($parse_once_fn);
+                                        if let Some(node) = once_node {
+                                            element = element.add(node);
+                                        }
+                                    )?
 
-                                return Ok(Some(Box::new(element)))
+                                    return Ok(Some(Box::new(element)))
+                                }
+                                None => {
+                                    return Err(ParserError::MissingEndTag {
+                                        tag_type: tag::$tag.into(),
+                                    })
+                                }
+                                _ => {
+                                    return Err(ParserError::UnexpectedContent);
+                                }
                             }
-                            None => {
-                                return Err(ParserError::MissingEndTag {
-                                    tag_type: tag::$tag.into(),
-                                })
-                            }
-                            _ => {}
                         }
+
                     }
                 }
                 Some(Event::Tag(tag::$tag, Type::Empty, attr)) => {
@@ -80,39 +102,30 @@ macro_rules! parse_character_data_element {
         fn $fn_name(&mut self) -> NodeResult {
             match &self.curr_event {
                 Some(Event::Tag(tag::$tag, Type::Start, attr)) => {
-                    let mut element: Option<element::$element> = None;
-                    let mut nodes = Vec::new();
-                    let attributes = attr.clone();
+                    let mut element = element::$element::new("");
+                    for (key, val) in attr {
+                        element = element.set(key, val.clone());
+                    }
 
                     loop {
                         self.next_event();
 
                         if let Some(node) = self.parse_non_tag()? {
-                            nodes.push(node);
-                        }
-
-                        match &self.curr_event {
-                            Some(Event::Tag(tag::$tag, Type::End, _)) => {
-                                for node in nodes {
-                                    element = element.map(|el| el.add(node));
+                            element = element.add(node);
+                        } else {
+                            match &self.curr_event {
+                                Some(Event::Tag(tag::$tag, Type::End, _)) => {
+                                    return Ok(Some(Box::new(element)));
                                 }
-
-                                return Ok(Some(Box::new(
-                                    element.unwrap_or(element::$element::new("")),
-                                )));
-                            }
-                            Some(Event::Text(text)) => {
-                                element = Some(element::$element::new(*text));
-                                for (key, val) in &attributes {
-                                    element = element.map(|el| el.set(key, val.clone()));
+                                None => {
+                                    return Err(ParserError::MissingEndTag {
+                                        tag_type: tag::$tag.into(),
+                                    })
+                                }
+                                _ => {
+                                    return Err(ParserError::UnexpectedContent);
                                 }
                             }
-                            None => {
-                                return Err(ParserError::MissingEndTag {
-                                    tag_type: tag::$tag.into(),
-                                })
-                            }
-                            _ => {}
                         }
                     }
                 }
@@ -132,10 +145,6 @@ macro_rules! parse_character_data_element {
 macro_rules! parse_element_group {
     ($fn_name:ident, $($parse_fn:ident),*) => {
         fn $fn_name(&mut self) -> NodeResult {
-            if let Some(node) = self.parse_non_tag()? {
-                return Ok(Some(node));
-            }
-
             $(
                 if let Some(node) = self.$parse_fn()? {
                     return Ok(Some(node));
@@ -165,6 +174,10 @@ impl<'a> Parser<'a> {
         let mut nodes = Vec::new();
 
         while self.curr_event.is_some() {
+            if let Some(node) = self.parse_outside_tags() {
+                nodes.push(node);
+            }
+
             if let Some(node) = self.parse_non_tag()? {
                 nodes.push(node);
             }
@@ -178,18 +191,29 @@ impl<'a> Parser<'a> {
         Ok(nodes)
     }
 
-    fn parse_non_tag(&mut self) -> NodeResult {
+    fn parse_outside_tags(&mut self) -> MaybeNode {
         if let Some(event) = &self.curr_event {
             match event {
                 Event::Declaration(text) | Event::Instruction(text) => {
-                    Ok(Some(Box::new(Blob::new(*text))))
+                    Some(Box::new(Blob::new(*text)))
                 }
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    fn parse_non_tag(&mut self) -> NodeResult {
+        if let Some(event) = &self.curr_event {
+            match event {
                 Event::Comment(text) => Ok(Some(Box::new(Comment::new(
                     text.strip_prefix("<!--")
                         .and_then(|txt| txt.strip_suffix("-->"))
                         .unwrap()
                         .trim(),
                 )))),
+                Event::Text(text) => Ok(Some(Box::new(Text::new(*text)))),
                 Event::Error(error) => Err(error.into()),
                 _ => Ok(None),
             }
@@ -203,7 +227,8 @@ impl<'a> Parser<'a> {
         SVG,
         SVG,
         parse_animation_element,
-        parse_basic_shape
+        parse_basic_shape,
+        parse_style
     );
 
     parse_element_group!(

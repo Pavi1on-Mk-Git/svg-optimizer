@@ -6,6 +6,8 @@ use svg::parser;
 #[derive(Debug)]
 pub enum ParserError {
     MissingEndTag { tag_type: String },
+    RepeatedOnceTag,
+    UnexpectedContent,
     IOError { description: String },
     FileFormatError { description: String },
 }
@@ -16,6 +18,8 @@ impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::MissingEndTag { tag_type } => write!(f, "Missing {} end tag", tag_type),
+            Self::RepeatedOnceTag => write!(f, "Repeated a tag which can appear only once"),
+            Self::UnexpectedContent => write!(f, "Unexpected content inside tag"),
             Self::IOError { description } => {
                 write!(f, "An IO Error has happened. Reason: {}", description)
             }

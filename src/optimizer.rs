@@ -17,6 +17,7 @@ impl Optimizer {
     fn apply_optimizations(&self, file_path: &Path) -> Result<(), ParserError> {
         let mut read_buffer = String::new();
         let svg_source = svg::open(file_path, &mut read_buffer)?;
+        let nodes = Parser::new(svg_source).parse_document()?;
 
         let new_file_name = {
             let mut new_file_string = OsString::from("opt_");
@@ -26,8 +27,7 @@ impl Optimizer {
 
         let mut file = File::create(new_file_name)?;
 
-        Parser::new(svg_source)
-            .parse_document()?
+        nodes
             .into_iter()
             .try_for_each(|node| file.write_fmt(format_args!("{}\n", node)))?;
 
