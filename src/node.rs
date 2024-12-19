@@ -36,7 +36,6 @@ macro_rules! conversions {
         #[derive(Debug)]
         pub enum RegularNodeType {
             $($node_type,)*
-            Unknown,
         }
 
         impl From<OwnedName> for RegularNodeType {
@@ -52,7 +51,6 @@ macro_rules! conversions {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
                 let name = match self {
                     $(RegularNodeType::$node_type => $name,)*
-                    RegularNodeType::Unknown => ""
                 };
                 write!(f, "{}", name)
             }
@@ -70,7 +68,77 @@ impl From<RegularNodeType> for OwnedName {
     }
 }
 
-conversions!([Svg, "svg"], [Rectangle, "rect"]);
+conversions!(
+    [Anchor, "a"],
+    [Animate, "animate"],
+    [AnimateMotion, "animateMotion"],
+    [AnimateTransform, "animateTransform"],
+    [Audio, "audio"],
+    [Canvas, "canvas"],
+    [Circle, "circle"],
+    [ClipPath, "clipPath"],
+    [Defs, "defs"],
+    [Description, "desc"],
+    [Discard, "discard"],
+    [Ellipse, "ellipse"],
+    [FeBlend, "feBlend"],
+    [FeColorMatrix, "feColorMatrix"],
+    [FeComponentTransfer, "feComponentTransfer"],
+    [FeComposite, "feComposite"],
+    [FeConvolveMatrix, "feConvolveMatrix"],
+    [FeDiffuseLighting, "feDiffuseLighting"],
+    [FeDisplacementMap, "feDisplacementMap"],
+    [FeDistantLight, "feDistantLight"],
+    [FeDropShadow, "feDropShadow"],
+    [FeFlood, "feFlood"],
+    [FeFuncA, "feFuncA"],
+    [FeFuncB, "feFuncB"],
+    [FeFuncG, "feFuncG"],
+    [FeFuncR, "feFuncR"],
+    [FeGaussianBlur, "feGaussianBlur"],
+    [FeImage, "feImage"],
+    [FeMerge, "feMerge"],
+    [FeMergeNode, "feMergeNode"],
+    [FeMorphology, "feMorphology"],
+    [FeOffset, "feOffset"],
+    [FePointLight, "fePointLight"],
+    [FeSpecularLighting, "feSpecularLighting"],
+    [FeSpotLight, "feSpotLight"],
+    [FeTile, "feTile"],
+    [FeTurbulence, "feTurbulence"],
+    [Filter, "filter"],
+    [ForeignObject, "foreignObject"],
+    [Group, "g"],
+    [IFrame, "iframe"],
+    [Image, "image"],
+    [Line, "line"],
+    [LinearGradient, "linearGradient"],
+    [Marker, "marker"],
+    [Mask, "mask"],
+    [Metadata, "metadata"],
+    [MotionPath, "mpath"],
+    [Path, "path"],
+    [Pattern, "pattern"],
+    [Polygon, "polygon"],
+    [Polyline, "polyline"],
+    [RadialGradient, "radialGradient"],
+    [Rectangle, "rect"],
+    [Script, "script"],
+    [Set, "set"],
+    [Stop, "stop"],
+    [Style, "style"],
+    [Svg, "svg"],
+    [Switch, "switch"],
+    [Symbol, "symbol"],
+    [Text, "text"],
+    [TextPath, "textPath"],
+    [Title, "title"],
+    [TSpan, "tspan"],
+    [Unknown, "unknown"],
+    [Use, "use"],
+    [Video, "video"],
+    [View, "view"]
+);
 
 pub enum ChildlessNodeType {
     Document(XmlVersion, String, Option<bool>),
