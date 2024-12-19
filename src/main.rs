@@ -1,4 +1,5 @@
 mod errors;
+mod node;
 mod optimizer;
 mod parser;
 

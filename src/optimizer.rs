@@ -1,8 +1,10 @@
+use xml::EventWriter;
+
 use crate::errors::ParserError;
 use crate::parser::Parser;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::Write;
+use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
@@ -15,9 +17,11 @@ pub struct Optimizer {
 
 impl Optimizer {
     fn apply_optimizations(&self, file_path: &Path) -> Result<(), ParserError> {
-        let mut read_buffer = String::new();
-        let svg_source = svg::open(file_path, &mut read_buffer)?;
-        let nodes = Parser::new(svg_source).parse_document()?;
+        let file = File::open(file_path)?;
+        let file = BufReader::new(file);
+        let mut parser = Parser::new(file)?;
+
+        let nodes = parser.parse_document()?;
 
         let new_file_name = {
             let mut new_file_string = OsString::from("opt_");
@@ -25,11 +29,12 @@ impl Optimizer {
             new_file_string
         };
 
-        let mut file = File::create(new_file_name)?;
-
-        nodes
-            .into_iter()
-            .try_for_each(|node| file.write_fmt(format_args!("{}\n", node)))?;
+        let new_file = File::create(new_file_name)?;
+        let mut writer = EventWriter::new(new_file);
+        nodes.into_iter().try_for_each(|node| {
+            node.into_iter()
+                .try_for_each(|event| writer.write(event.as_writer_event().unwrap()))
+        })?;
 
         Ok(())
     }
