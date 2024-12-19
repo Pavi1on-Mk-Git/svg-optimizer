@@ -1,16 +1,20 @@
-use xml::EventWriter;
-
 use crate::errors::ParserError;
+use crate::optimizations::remove_comments;
 use crate::parser::Parser;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use xml::EventWriter;
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
 #[command(version)]
 pub struct Optimizer {
+    /// Remove all comments from files
+    #[arg(long)]
+    remove_comments: bool,
+
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
 }
@@ -21,7 +25,11 @@ impl Optimizer {
         let file = BufReader::new(file);
         let mut parser = Parser::new(file)?;
 
-        let nodes = parser.parse_document()?;
+        let mut nodes = parser.parse_document()?;
+
+        if self.remove_comments {
+            nodes = remove_comments(nodes);
+        }
 
         let new_file_name = {
             let mut new_file_string = OsString::from("opt_");
