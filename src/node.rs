@@ -47,6 +47,7 @@ macro_rules! conversions {
         #[derive(Debug)]
         pub enum RegularNodeType {
             Svg(Option<String>),
+            Unknown(String),
             $($node_type,)*
         }
 
@@ -54,7 +55,7 @@ macro_rules! conversions {
             fn from(value: OwnedName) -> Self {
                 match value.local_name.as_str() {
                     $($name => Self::$node_type,)*
-                    _ => Self::Unknown,
+                    name => Self::Unknown(name.into()),
                 }
             }
         }
@@ -63,6 +64,7 @@ macro_rules! conversions {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
                 let name = match self {
                     RegularNodeType::Svg(_) => "svg",
+                    RegularNodeType::Unknown(name) => name,
                     $(RegularNodeType::$node_type => $name,)*
                 };
                 write!(f, "{}", name)
@@ -146,7 +148,6 @@ conversions!(
     [TextPath, "textPath"],
     [Title, "title"],
     [TSpan, "tspan"],
-    [Unknown, "unknown"],
     [Use, "use"],
     [Video, "video"],
     [View, "view"]
