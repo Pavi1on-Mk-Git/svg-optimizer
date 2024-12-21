@@ -140,7 +140,7 @@ mod tests {
         ",
         "\
         <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-        <svg />\
+        <svg xmlns=\"http://www.w3.org/2000/svg\" />\
         "
     );
 
@@ -156,7 +156,7 @@ mod tests {
         ",
         "\
         <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-        <svg>\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <circle cx=\"40\" cy=\"40\" r=\"25\" fill=\"white\" stroke=\"green\" stroke-width=\"5\" />\
         </svg>\
         "

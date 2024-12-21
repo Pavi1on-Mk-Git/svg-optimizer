@@ -2,8 +2,10 @@ use crate::errors::ParserError;
 use crate::node::ChildlessNodeType::*;
 use crate::node::Node;
 use crate::node::Node::*;
+use crate::node::RegularNodeType;
 use std::io::Read;
 use xml::attribute::OwnedAttribute;
+use xml::namespace::Namespace;
 use xml::reader::ParserConfig2;
 use xml::reader::XmlEvent;
 use xml::EventReader;
@@ -74,15 +76,21 @@ impl<R: Read> Parser<R> {
             Some(XmlEvent::Characters(text)) => ChildlessNode {
                 node_type: Text(text),
             },
-            Some(XmlEvent::StartElement { attributes, .. }) => {
-                self.parse_regular_node(attributes)?
-            }
+            Some(XmlEvent::StartElement {
+                attributes,
+                namespace,
+                ..
+            }) => self.parse_regular_node(attributes, namespace)?,
             _ => unreachable!(),
         };
         Ok(Some(node))
     }
 
-    fn parse_regular_node(&mut self, attributes: Vec<OwnedAttribute>) -> Result<Node> {
+    fn parse_regular_node(
+        &mut self,
+        attributes: Vec<OwnedAttribute>,
+        namespace: Namespace,
+    ) -> Result<Node> {
         let mut children = Vec::new();
         loop {
             self.next_event()?;
@@ -90,7 +98,7 @@ impl<R: Read> Parser<R> {
             if let Some(node) = self.parse_node()? {
                 children.push(node);
             } else {
-                return Ok(self.assemble_regular_node(attributes, children));
+                return Ok(self.assemble_regular_node(attributes, namespace, children));
             }
         }
     }
@@ -98,11 +106,17 @@ impl<R: Read> Parser<R> {
     fn assemble_regular_node(
         &mut self,
         attributes: Vec<OwnedAttribute>,
+        namespace: Namespace,
         children: Vec<Node>,
     ) -> Node {
         if let Some(XmlEvent::EndElement { name }) = self.curr_event.take() {
+            let node_type = if name.local_name == "svg" {
+                RegularNodeType::Svg(namespace.get("").map(|s| s.into()))
+            } else {
+                name.into()
+            };
             RegularNode {
-                node_type: name.into(),
+                node_type,
                 attributes,
                 children,
             }
