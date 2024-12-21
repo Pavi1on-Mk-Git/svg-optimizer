@@ -1,5 +1,5 @@
 use crate::errors::ParserError;
-use crate::optimizations::remove_comments;
+use crate::optimizations::*;
 use crate::parser::Parser;
 use std::ffi::OsString;
 use std::fs::File;
@@ -15,6 +15,11 @@ pub struct Optimizer {
     #[arg(long)]
     remove_comments: bool,
 
+    /// Remove useless groups
+    /// A group is considered useless if it contains a single node
+    #[arg(long)]
+    remove_useless_groups: bool,
+
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
 }
@@ -29,6 +34,10 @@ impl Optimizer {
 
         if self.remove_comments {
             nodes = remove_comments(nodes);
+        }
+
+        if self.remove_useless_groups {
+            nodes = remove_useless_groups(nodes);
         }
 
         let new_file_name = {

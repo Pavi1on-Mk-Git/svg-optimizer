@@ -1,4 +1,6 @@
-use crate::node::{ChildlessNodeType, Node};
+use xml::attribute::OwnedAttribute;
+
+use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 
 pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
     nodes
@@ -26,6 +28,70 @@ pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
         .collect()
 }
 
+fn merge_attributes(
+    parent: Vec<OwnedAttribute>,
+    child: Vec<OwnedAttribute>,
+) -> Vec<OwnedAttribute> {
+    let mut result = child;
+    result.extend(parent);
+    result.dedup_by(|fst, snd| fst.name == snd.name);
+    result
+}
+
+pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
+    nodes
+        .into_iter()
+        .map(|node| match node {
+            Node::RegularNode {
+                node_type: RegularNodeType::Group,
+                attributes: parent_attr,
+                children,
+            } => {
+                let mut new_children = remove_useless_groups(children);
+                let last = new_children.pop();
+
+                if let Some(node) = last {
+                    if let Node::RegularNode {
+                        node_type,
+                        attributes: child_attr,
+                        children,
+                    } = node
+                    {
+                        Node::RegularNode {
+                            node_type,
+                            attributes: merge_attributes(parent_attr, child_attr),
+                            children,
+                        }
+                    } else {
+                        new_children.push(node);
+                        Node::RegularNode {
+                            node_type: RegularNodeType::Group,
+                            attributes: parent_attr,
+                            children: new_children,
+                        }
+                    }
+                } else {
+                    Node::RegularNode {
+                        node_type: RegularNodeType::Group,
+                        attributes: parent_attr,
+                        children: vec![],
+                    }
+                }
+            }
+            Node::RegularNode {
+                node_type,
+                attributes,
+                children,
+            } => Node::RegularNode {
+                node_type,
+                attributes,
+                children: remove_useless_groups(children),
+            },
+            other => other,
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,7 +102,7 @@ mod tests {
     macro_rules! test_optimize {
         ($fn_name:ident, $tested_fn:ident, $test_str:literal, $result:literal) => {
             #[test]
-            fn test_remove_comments() -> Result<(), ParserError> {
+            fn $fn_name() -> Result<(), ParserError> {
                 let test_string = $test_str;
 
                 let mut parser = Parser::new(test_string.as_bytes())?;
@@ -47,6 +113,7 @@ mod tests {
 
                 let buffer = Vec::new();
                 let mut writer = EventWriter::new(buffer);
+
                 nodes.into_iter().try_for_each(|node| {
                     node.into_iter()
                         .try_for_each(|event| writer.write(event.as_writer_event().unwrap()))
@@ -54,7 +121,7 @@ mod tests {
 
                 let result = String::from_utf8(writer.into_inner()).unwrap();
 
-                assert_eq!($result, result);
+                assert_eq!(result, $result);
 
                 Ok(())
             }
@@ -66,13 +133,32 @@ mod tests {
         remove_comments,
         "\
         <!-- comment -->\
-        <svg width=\"320\" height=\"130\" xmlns=\"http://www.w3.org/2000/svg\">\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <!-- comment -->\
         </svg>\
         <!-- comment -->\
         ",
         "\
-        <?xml version=\"1.0\" encoding=\"UTF-8\"?><svg width=\"320\" height=\"130\" />\
+        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <svg />\
+        "
+    );
+
+    test_optimize!(
+        test_remove_useless_groups,
+        remove_useless_groups,
+        "\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
+        <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
+        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
+        </g>\
+        </svg>\
+        ",
+        "\
+        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <svg>\
+        <circle cx=\"40\" cy=\"40\" r=\"25\" fill=\"white\" stroke=\"green\" stroke-width=\"5\" />\
+        </svg>\
         "
     );
 }
