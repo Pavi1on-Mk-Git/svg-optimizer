@@ -39,6 +39,22 @@ fn merge_attributes(
 }
 
 pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
+    let nodes: Vec<Node> = nodes
+        .into_iter()
+        .filter(|node| {
+            if let Node::RegularNode {
+                node_type: RegularNodeType::Group,
+                attributes: _,
+                children,
+            } = node
+            {
+                !children.is_empty()
+            } else {
+                true
+            }
+        })
+        .collect();
+
     nodes
         .into_iter()
         .map(|node| match node {
@@ -48,6 +64,15 @@ pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
                 children,
             } => {
                 let mut new_children = remove_useless_groups(children);
+
+                if new_children.len() > 1 {
+                    return Node::RegularNode {
+                        node_type: RegularNodeType::Group,
+                        attributes: parent_attr,
+                        children: new_children,
+                    };
+                }
+
                 let last = new_children.pop();
 
                 if let Some(node) = last {
@@ -100,9 +125,9 @@ mod tests {
     use xml::EventWriter;
 
     macro_rules! test_optimize {
-        ($fn_name:ident, $tested_fn:ident, $test_str:literal, $result:literal) => {
+        ($test_name:ident, $tested_fn:ident, $test_str:literal, $result:literal) => {
             #[test]
-            fn $fn_name() -> Result<(), ParserError> {
+            fn $test_name() -> Result<(), ParserError> {
                 let test_string = $test_str;
 
                 let mut parser = Parser::new(test_string.as_bytes())?;
@@ -145,19 +170,42 @@ mod tests {
     );
 
     test_optimize!(
-        test_remove_useless_groups,
+        test_remove_useless_groups_removed,
         remove_useless_groups,
         "\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
         <circle cx=\"40\" cy=\"40\" r=\"25\" />\
         </g>\
+        <g></g>\
         </svg>\
         ",
         "\
         <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <circle cx=\"40\" cy=\"40\" r=\"25\" fill=\"white\" stroke=\"green\" stroke-width=\"5\" />\
+        </svg>\
+        "
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_not_removed,
+        remove_useless_groups,
+        "\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
+        <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
+        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
+        <circle cx=\"80\" cy=\"80\" r=\"25\" />\
+        </g>\
+        </svg>\
+        ",
+        "\
+        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
+        <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
+        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
+        <circle cx=\"80\" cy=\"80\" r=\"25\" />\
+        </g>\
         </svg>\
         "
     );
