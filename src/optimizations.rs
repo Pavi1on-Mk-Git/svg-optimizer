@@ -41,22 +41,6 @@ fn merge_attributes(
 pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
     let nodes: Vec<Node> = nodes
         .into_iter()
-        .filter(|node| {
-            if let Node::RegularNode {
-                node_type: RegularNodeType::Group,
-                attributes: _,
-                children,
-            } = node
-            {
-                !children.is_empty()
-            } else {
-                true
-            }
-        })
-        .collect();
-
-    nodes
-        .into_iter()
         .map(|node| match node {
             Node::RegularNode {
                 node_type: RegularNodeType::Group,
@@ -113,6 +97,22 @@ pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
                 children: remove_useless_groups(children),
             },
             other => other,
+        })
+        .collect();
+
+    nodes
+        .into_iter()
+        .filter(|node| {
+            if let Node::RegularNode {
+                node_type: RegularNodeType::Group,
+                attributes: _,
+                children,
+            } = node
+            {
+                !children.is_empty()
+            } else {
+                true
+            }
         })
         .collect()
 }
@@ -177,7 +177,7 @@ mod tests {
         <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
         <circle cx=\"40\" cy=\"40\" r=\"25\" />\
         </g>\
-        <g></g>\
+        <g><g/></g>\
         </svg>\
         ",
         "\
