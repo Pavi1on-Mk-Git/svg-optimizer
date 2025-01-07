@@ -2,119 +2,107 @@ use xml::attribute::OwnedAttribute;
 
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 
-pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
-    nodes
-        .into_iter()
-        .filter(|node| {
-            !matches!(
-                node,
-                Node::ChildlessNode {
-                    node_type: ChildlessNodeType::Comment(_)
-                }
-            )
-        })
-        .map(|node| match node {
-            Node::RegularNode {
-                node_type,
-                attributes,
-                children,
-            } => Node::RegularNode {
-                node_type,
-                attributes,
-                children: remove_comments(children),
-            },
-            childless_node => childless_node,
-        })
-        .collect()
+fn apply_to_nodes<I, F>(nodes: I, func: F) -> Vec<Node>
+where
+    I: IntoIterator<Item = Node>,
+    F: Fn(Node) -> Option<Node>,
+{
+    nodes.into_iter().filter_map(func).collect()
+}
+
+fn remove_comments_from_node(node: Node) -> Option<Node> {
+    match node {
+        Node::RegularNode {
+            node_type,
+            attributes,
+            children,
+        } => Some(Node::RegularNode {
+            node_type,
+            attributes,
+            children: remove_comments(children),
+        }),
+        Node::ChildlessNode {
+            node_type: ChildlessNodeType::Comment(_),
+        } => None,
+        childless_node => Some(childless_node),
+    }
+}
+
+pub fn remove_comments<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+    apply_to_nodes(nodes, remove_comments_from_node)
+}
+
+fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
+    match node {
+        Node::RegularNode {
+            node_type: RegularNodeType::Group,
+            attributes: parent_attr,
+            children,
+        } => {
+            let mut new_children = remove_useless_groups(children);
+
+            if new_children.len() > 1 {
+                return Some(Node::RegularNode {
+                    node_type: RegularNodeType::Group,
+                    attributes: parent_attr,
+                    children: new_children,
+                });
+            }
+
+            new_children
+                .pop()
+                .map(|node| merge_with_group(node, parent_attr, new_children))
+        }
+        Node::RegularNode {
+            node_type,
+            attributes,
+            children,
+        } => Some(Node::RegularNode {
+            node_type,
+            attributes,
+            children: remove_useless_groups(children),
+        }),
+        other => Some(other),
+    }
+}
+
+fn merge_with_group(
+    node: Node,
+    parent_attr: Vec<OwnedAttribute>,
+    mut new_children: Vec<Node>,
+) -> Node {
+    if let Node::RegularNode {
+        node_type,
+        attributes: child_attr,
+        children,
+    } = node
+    {
+        Node::RegularNode {
+            node_type,
+            attributes: merge_attributes(parent_attr, child_attr),
+            children,
+        }
+    } else {
+        new_children.push(node);
+        Node::RegularNode {
+            node_type: RegularNodeType::Group,
+            attributes: parent_attr,
+            children: new_children,
+        }
+    }
 }
 
 fn merge_attributes(
     parent: Vec<OwnedAttribute>,
-    child: Vec<OwnedAttribute>,
+    mut child: Vec<OwnedAttribute>,
 ) -> Vec<OwnedAttribute> {
-    let mut result = child;
-    result.extend(parent);
-    result.dedup_by(|fst, snd| fst.name == snd.name);
-    result
+    child.extend(parent);
+    child.dedup_by(|fst, snd| fst.name == snd.name);
+    child
 }
 
-pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
-    let nodes: Vec<Node> = nodes
-        .into_iter()
-        .map(|node| match node {
-            Node::RegularNode {
-                node_type: RegularNodeType::Group,
-                attributes: parent_attr,
-                children,
-            } => {
-                let mut new_children = remove_useless_groups(children);
-
-                if new_children.len() > 1 {
-                    return Node::RegularNode {
-                        node_type: RegularNodeType::Group,
-                        attributes: parent_attr,
-                        children: new_children,
-                    };
-                }
-
-                let last = new_children.pop();
-
-                if let Some(node) = last {
-                    if let Node::RegularNode {
-                        node_type,
-                        attributes: child_attr,
-                        children,
-                    } = node
-                    {
-                        Node::RegularNode {
-                            node_type,
-                            attributes: merge_attributes(parent_attr, child_attr),
-                            children,
-                        }
-                    } else {
-                        new_children.push(node);
-                        Node::RegularNode {
-                            node_type: RegularNodeType::Group,
-                            attributes: parent_attr,
-                            children: new_children,
-                        }
-                    }
-                } else {
-                    Node::RegularNode {
-                        node_type: RegularNodeType::Group,
-                        attributes: parent_attr,
-                        children: vec![],
-                    }
-                }
-            }
-            Node::RegularNode {
-                node_type,
-                attributes,
-                children,
-            } => Node::RegularNode {
-                node_type,
-                attributes,
-                children: remove_useless_groups(children),
-            },
-            other => other,
-        })
-        .collect();
-
-    nodes
-        .into_iter()
-        .filter(|node| {
-            if let Node::RegularNode {
-                node_type: RegularNodeType::Group,
-                attributes: _,
-                children,
-            } = node
-            {
-                !children.is_empty()
-            } else {
-                true
-            }
-        })
-        .collect()
+pub fn remove_useless_groups<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+    apply_to_nodes(nodes, remove_useless_groups_from_node)
 }
 
 #[cfg(test)]

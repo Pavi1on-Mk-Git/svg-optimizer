@@ -17,8 +17,7 @@ pub enum Node {
 }
 
 impl RegularNodeType {
-    fn tags(self, attributes: Vec<OwnedAttribute>) -> (XmlEvent, XmlEvent) {
-        let mut attributes = attributes;
+    fn tags(self, mut attributes: Vec<OwnedAttribute>) -> (XmlEvent, XmlEvent) {
         if let RegularNodeType::Svg(Some(text)) = &self {
             attributes.push(OwnedAttribute::new(
                 OwnedName {
