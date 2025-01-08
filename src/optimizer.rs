@@ -20,6 +20,10 @@ pub struct Optimizer {
     #[arg(long)]
     remove_useless_groups: bool,
 
+    /// Convert ellipsis to circles if their `rx` and `ry` are equal
+    #[arg(long)]
+    ellipsis_to_circles: bool,
+
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
 }
@@ -38,6 +42,10 @@ impl Optimizer {
 
         if self.remove_useless_groups {
             nodes = remove_useless_groups(nodes);
+        }
+
+        if self.ellipsis_to_circles {
+            nodes = ellipsis_to_circles(nodes);
         }
 
         let new_file_name = {
