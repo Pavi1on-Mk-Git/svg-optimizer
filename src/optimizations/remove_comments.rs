@@ -1,0 +1,50 @@
+use crate::node::ChildlessNodeType;
+use crate::node::Node;
+use crate::optimizations::apply_to_nodes;
+
+fn remove_comments_from_node(node: Node) -> Option<Node> {
+    match node {
+        Node::RegularNode {
+            node_type,
+            attributes,
+            children,
+        } => Some(Node::RegularNode {
+            node_type,
+            attributes,
+            children: remove_comments(children),
+        }),
+        Node::ChildlessNode {
+            node_type: ChildlessNodeType::Comment(_),
+        } => None,
+        childless_node => Some(childless_node),
+    }
+}
+
+pub fn remove_comments<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+    apply_to_nodes(nodes, remove_comments_from_node)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::errors::ParserError;
+    use crate::optimizations::test::test_optimize;
+    use crate::parser::Parser;
+    use xml::writer::EventWriter;
+
+    test_optimize!(
+        test_remove_comments,
+        remove_comments,
+        "\
+        <!-- comment -->\
+        <svg xmlns=\"http://www.w3.org/2000/svg\">\
+        <!-- comment -->\
+        </svg>\
+        <!-- comment -->\
+        ",
+        "\
+        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+        <svg xmlns=\"http://www.w3.org/2000/svg\" />\
+        "
+    );
+}
