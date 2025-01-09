@@ -34,6 +34,7 @@ impl Iterator for IdGenerator {
             if remaining_count == 0 {
                 break;
             }
+            remaining_count -= 1;
         }
 
         self.generated_ids += 1;
@@ -108,6 +109,20 @@ mod tests {
     use crate::optimizations::test::test_optimize;
     use crate::parser::Parser;
     use xml::writer::EventWriter;
+
+    #[test]
+    fn test_id_generation() {
+        let chars_size = 62;
+        let mut gen = IdGenerator::new();
+
+        assert_eq!(gen.nth(5), Some("f".into()));
+        assert_eq!(gen.nth(chars_size - 1), Some("fa".into()));
+        assert_eq!(gen.nth(chars_size.pow(2)), Some("gaa".into()));
+        assert_eq!(
+            gen.nth(chars_size.pow(3) - chars_size - 1),
+            Some("g99".into())
+        );
+    }
 
     test_optimize!(
         test_shorten_ids,
