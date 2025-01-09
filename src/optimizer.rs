@@ -24,6 +24,10 @@ pub struct Optimizer {
     #[arg(long)]
     ellipsis_to_circles: bool,
 
+    /// Convert ids to shortest possible
+    #[arg(long)]
+    shorten_ids: bool,
+
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
 }
@@ -46,6 +50,10 @@ impl Optimizer {
 
         if self.ellipsis_to_circles {
             nodes = ellipsis_to_circles(nodes);
+        }
+
+        if self.shorten_ids {
+            nodes = shorten_ids(nodes);
         }
 
         let new_file_name = {

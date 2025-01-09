@@ -8,16 +8,17 @@ where
     nodes.into_iter().filter_map(func).collect()
 }
 
-macro_rules! def_optimization {
+macro_rules! use_optimization {
     ($fn_name:ident) => {
         mod $fn_name;
         pub use $fn_name::$fn_name;
     };
 }
 
-def_optimization!(ellipsis_to_circles);
-def_optimization!(remove_comments);
-def_optimization!(remove_useless_groups);
+use_optimization!(ellipsis_to_circles);
+use_optimization!(remove_comments);
+use_optimization!(remove_useless_groups);
+use_optimization!(shorten_ids);
 
 #[cfg(test)]
 pub mod test {
