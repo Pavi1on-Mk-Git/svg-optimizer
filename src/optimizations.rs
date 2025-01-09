@@ -19,6 +19,7 @@ use_optimization!(ellipsis_to_circles);
 use_optimization!(remove_comments);
 use_optimization!(remove_useless_groups);
 use_optimization!(shorten_ids);
+use_optimization!(remove_attr_whitespace);
 
 #[cfg(test)]
 pub mod test {

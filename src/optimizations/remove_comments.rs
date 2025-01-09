@@ -1,6 +1,6 @@
+use super::apply_to_nodes;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
-use crate::optimizations::apply_to_nodes;
 
 fn remove_comments_from_node(node: Node) -> Option<Node> {
     match node {

@@ -24,9 +24,13 @@ pub struct Optimizer {
     #[arg(long)]
     ellipsis_to_circles: bool,
 
-    /// Convert ids to shortest possible
+    /// Convert ids to possibly short ones created from latin alphabet letters and digits
     #[arg(long)]
     shorten_ids: bool,
+
+    /// Remove superfluous whitespace from attributes
+    #[arg(long)]
+    remove_attr_whitespace: bool,
 
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
@@ -54,6 +58,10 @@ impl Optimizer {
 
         if self.shorten_ids {
             nodes = shorten_ids(nodes);
+        }
+
+        if self.remove_attr_whitespace {
+            nodes = remove_attr_whitespace(nodes);
         }
 
         let new_file_name = {

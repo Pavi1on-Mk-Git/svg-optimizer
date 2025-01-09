@@ -1,8 +1,7 @@
-use std::collections::BTreeMap;
-
+use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::Node::RegularNode;
-use crate::optimizations::apply_to_nodes;
+use std::collections::BTreeMap;
 
 struct IdGenerator {
     base_characters: Vec<char>,

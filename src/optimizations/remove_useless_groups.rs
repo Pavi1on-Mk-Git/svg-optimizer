@@ -1,6 +1,6 @@
+use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::RegularNodeType;
-use crate::optimizations::apply_to_nodes;
 use xml::attribute::OwnedAttribute;
 
 fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
