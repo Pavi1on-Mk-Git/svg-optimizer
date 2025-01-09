@@ -73,7 +73,7 @@ fn circle_attributes(
     }
 }
 
-pub fn ellipsis_to_circles<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+pub fn ellipsis_to_circles(nodes: Vec<Node>) -> Vec<Node> {
     apply_to_nodes(nodes, ellipsis_to_circles_from_node)
 }
 

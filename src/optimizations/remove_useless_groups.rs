@@ -72,7 +72,7 @@ fn merge_attributes(
     child
 }
 
-pub fn remove_useless_groups<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
     apply_to_nodes(nodes, remove_useless_groups_from_node)
 }
 

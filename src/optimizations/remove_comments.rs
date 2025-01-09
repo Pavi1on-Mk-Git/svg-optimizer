@@ -20,7 +20,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_comments<I: IntoIterator<Item = Node>>(nodes: I) -> Vec<Node> {
+pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
     apply_to_nodes(nodes, remove_comments_from_node)
 }
 
