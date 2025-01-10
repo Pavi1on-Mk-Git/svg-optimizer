@@ -30,7 +30,7 @@ mod tests {
     use crate::errors::ParserError;
     use crate::optimizations::test::test_optimize;
     use crate::parser::Parser;
-    use xml::writer::EventWriter;
+    use crate::writer::SVGWriter;
 
     test_optimize!(
         test_remove_comments,
@@ -43,8 +43,7 @@ mod tests {
         <!-- comment -->\
         ",
         "\
-        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
-        <svg xmlns=\"http://www.w3.org/2000/svg\" />\
+        <svg xmlns=\"http://www.w3.org/2000/svg\"/>\
         "
     );
 }

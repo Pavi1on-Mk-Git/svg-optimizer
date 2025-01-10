@@ -82,7 +82,7 @@ mod tests {
     use crate::errors::ParserError;
     use crate::optimizations::test::test_optimize;
     use crate::parser::Parser;
-    use xml::writer::EventWriter;
+    use crate::writer::SVGWriter;
 
     test_optimize!(
         test_remove_useless_groups_removed,
@@ -90,15 +90,14 @@ mod tests {
         "\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
-        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
+        <circle cx=\"40\" cy=\"40\" r=\"25\"/>\
         </g>\
         <g><g/></g>\
         </svg>\
         ",
         "\
-        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <circle cx=\"40\" cy=\"40\" r=\"25\" fill=\"white\" stroke=\"green\" stroke-width=\"5\" />\
+        <circle cx=\"40\" cy=\"40\" r=\"25\" fill=\"white\" stroke=\"green\" stroke-width=\"5\"/>\
         </svg>\
         "
     );
@@ -109,17 +108,16 @@ mod tests {
         "\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
-        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
-        <circle cx=\"80\" cy=\"80\" r=\"25\" />\
+        <circle cx=\"40\" cy=\"40\" r=\"25\"/>\
+        <circle cx=\"80\" cy=\"80\" r=\"25\"/>\
         </g>\
         </svg>\
         ",
         "\
-        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
         <g fill=\"white\" stroke=\"green\" stroke-width=\"5\">\
-        <circle cx=\"40\" cy=\"40\" r=\"25\" />\
-        <circle cx=\"80\" cy=\"80\" r=\"25\" />\
+        <circle cx=\"40\" cy=\"40\" r=\"25\"/>\
+        <circle cx=\"80\" cy=\"80\" r=\"25\"/>\
         </g>\
         </svg>\
         "

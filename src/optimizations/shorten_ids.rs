@@ -107,7 +107,7 @@ mod tests {
     use crate::errors::ParserError;
     use crate::optimizations::test::test_optimize;
     use crate::parser::Parser;
-    use xml::writer::EventWriter;
+    use crate::writer::SVGWriter;
 
     #[test]
     fn test_id_generation() {
@@ -128,19 +128,18 @@ mod tests {
         shorten_ids,
         "\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <rect id=\"smallRect1\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"mediumRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"largeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"hugeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
+        <rect id=\"smallRect1\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"mediumRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"largeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"hugeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
         </svg>\
         ",
         "\
-        <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
         <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <rect id=\"a\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"b\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"c\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
-        <rect id=\"d\" x=\"10\" y=\"10\" width=\"100\" height=\"100\" />\
+        <rect id=\"a\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"b\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"c\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
+        <rect id=\"d\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
         </svg>\
         "
     );

@@ -1,11 +1,12 @@
 use crate::errors::ParserError;
 use crate::optimizations::*;
 use crate::parser::Parser;
+use crate::writer::SVGWriter;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
-use xml::EventWriter;
+use std::path::Path;
+use std::path::PathBuf;
 
 /// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
 #[derive(clap::Parser)]
@@ -71,11 +72,7 @@ impl Optimizer {
         };
 
         let new_file = File::create(new_file_name)?;
-        let mut writer = EventWriter::new(new_file);
-        nodes.into_iter().try_for_each(|node| {
-            node.into_iter()
-                .try_for_each(|event| writer.write(event.as_writer_event().unwrap()))
-        })?;
+        SVGWriter::new(new_file).write(nodes)?;
 
         Ok(())
     }

@@ -36,12 +36,8 @@ pub mod test {
                 let nodes = $tested_fn(nodes);
 
                 let buffer = Vec::new();
-                let mut writer = EventWriter::new(buffer);
-
-                nodes.into_iter().try_for_each(|node| {
-                    node.into_iter()
-                        .try_for_each(|event| writer.write(event.as_writer_event().unwrap()))
-                })?;
+                let mut writer = SVGWriter::new(buffer);
+                writer.write(nodes)?;
 
                 let result = String::from_utf8(writer.into_inner()).unwrap();
 

@@ -1,6 +1,5 @@
 use std::fmt;
 use xml::attribute::OwnedAttribute;
-use xml::common::XmlVersion;
 use xml::name::OwnedName;
 use xml::namespace::Namespace;
 use xml::reader::XmlEvent;
@@ -153,7 +152,6 @@ conversions!(
 );
 
 pub enum ChildlessNodeType {
-    Document(XmlVersion, String, Option<bool>),
     ProcessingInstruction(String, Option<String>),
     Comment(String),
     Text(String),
@@ -162,11 +160,6 @@ pub enum ChildlessNodeType {
 impl ChildlessNodeType {
     fn tag(self) -> XmlEvent {
         match self {
-            Self::Document(version, encoding, standalone) => XmlEvent::StartDocument {
-                version,
-                encoding,
-                standalone,
-            },
             Self::ProcessingInstruction(name, data) => {
                 XmlEvent::ProcessingInstruction { name, data }
             }

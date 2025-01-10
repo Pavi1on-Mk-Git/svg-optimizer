@@ -60,30 +60,24 @@ impl<R: Read> Parser<R> {
         }
 
         let node = match self.curr_event.take() {
-            Some(XmlEvent::StartDocument {
-                version,
-                encoding,
-                standalone,
-            }) => ChildlessNode {
-                node_type: Document(version, encoding, standalone),
-            },
-            Some(XmlEvent::ProcessingInstruction { name, data }) => ChildlessNode {
+            Some(XmlEvent::StartDocument { .. }) => None,
+            Some(XmlEvent::ProcessingInstruction { name, data }) => Some(ChildlessNode {
                 node_type: ProcessingInstruction(name, data),
-            },
-            Some(XmlEvent::Comment(text)) => ChildlessNode {
+            }),
+            Some(XmlEvent::Comment(text)) => Some(ChildlessNode {
                 node_type: Comment(text),
-            },
-            Some(XmlEvent::Characters(text)) => ChildlessNode {
+            }),
+            Some(XmlEvent::Characters(text)) => Some(ChildlessNode {
                 node_type: Text(text),
-            },
+            }),
             Some(XmlEvent::StartElement {
                 attributes,
                 namespace,
                 ..
-            }) => self.parse_regular_node(attributes, namespace)?,
+            }) => Some(self.parse_regular_node(attributes, namespace)?),
             _ => unreachable!(),
         };
-        Ok(Some(node))
+        Ok(node)
     }
 
     fn parse_regular_node(
@@ -141,7 +135,7 @@ mod tests {
 
         let nodes = parser.parse_document()?;
 
-        assert_eq!(nodes.len(), 2);
+        assert_eq!(nodes.len(), 1);
 
         Ok(())
     }
@@ -156,7 +150,7 @@ mod tests {
 
         let nodes = parser.parse_document()?;
 
-        assert_eq!(nodes.len(), 2);
+        assert_eq!(nodes.len(), 1);
 
         Ok(())
     }
@@ -191,7 +185,6 @@ mod tests {
     #[test]
     fn test_parse_non_tag() -> Result<()> {
         let test_string = r#"
-            <?xml version="1.0" encoding="utf-8"?>
             <!--Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In .SVG Version: 6.00 Build 0)-->
             <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
             <svg/>
@@ -201,7 +194,7 @@ mod tests {
 
         let nodes = parser.parse_document()?;
 
-        assert_eq!(nodes.len(), 3);
+        assert_eq!(nodes.len(), 2);
 
         Ok(())
     }
