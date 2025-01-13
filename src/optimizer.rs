@@ -1,8 +1,8 @@
-use crate::errors::SimpleError;
 use crate::node::Node;
 use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
+use anyhow::Error;
 use anyhow::Result;
 use std::ffi::OsString;
 use std::fs::File;
@@ -102,16 +102,15 @@ impl Optimizer {
 
     fn validate_args(&self) -> Result<()> {
         if self.file_names.is_empty() {
-            return Err(SimpleError::new("There must be at least one input file path").into());
+            return Err(Error::msg("There must be at least one input file path"));
         }
 
         if !self.output_file_names.is_empty()
             && self.output_file_names.len() != self.file_names.len()
         {
-            return Err(SimpleError::new(
+            return Err(Error::msg(
                 "There must be the same amount of output file paths and input file paths",
-            )
-            .into());
+            ));
         }
         Ok(())
     }

@@ -5,14 +5,11 @@ mod optimizer;
 mod parser;
 mod writer;
 
+use anyhow::Result;
 use clap::Parser;
 use optimizer::Optimizer;
-use std::process::exit;
 
-fn main() {
-    let optimizer = Optimizer::parse();
-    if let Err(opt_error) = optimizer.optimize() {
-        println!("{}", opt_error);
-        exit(1);
-    }
+fn main() -> Result<()> {
+    Optimizer::parse().optimize()?;
+    Ok(())
 }
