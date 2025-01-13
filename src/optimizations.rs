@@ -30,11 +30,10 @@ pub mod test {
     macro_rules! test_optimize {
         ($test_name:ident, $tested_fn:ident, $test_str:literal, $result:literal) => {
             #[test]
-            fn $test_name() -> Result<(), ParserError> {
+            fn $test_name() -> anyhow::Result<()> {
                 let test_string = $test_str;
 
                 let mut parser = Parser::new(test_string.as_bytes())?;
-
                 let nodes = parser.parse_document()?;
 
                 let nodes = $tested_fn(nodes);

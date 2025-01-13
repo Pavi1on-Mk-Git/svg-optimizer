@@ -1,8 +1,8 @@
-use crate::errors::ParserError;
 use crate::node::ChildlessNodeType::*;
 use crate::node::Node;
 use crate::node::Node::*;
 use crate::node::RegularNodeType;
+use anyhow::Result;
 use std::io::Read;
 use xml::attribute::OwnedAttribute;
 use xml::namespace::Namespace;
@@ -16,8 +16,6 @@ pub struct Parser<R: Read> {
     source: EventReader<R>,
     curr_event: Option<XmlEvent>,
 }
-
-type Result<T> = std::result::Result<T, ParserError>;
 
 impl<R: Read> Parser<R> {
     pub fn new(source: R) -> Result<Self> {

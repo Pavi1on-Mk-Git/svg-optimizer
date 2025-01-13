@@ -1,8 +1,8 @@
-use crate::errors::ParserError;
 use crate::node::Node;
 use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
+use anyhow::Result;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
@@ -41,13 +41,15 @@ pub struct Optimizer {
     #[arg(num_args = 1..)]
     file_names: Vec<PathBuf>,
 
-    /// Names of the output files for each input file. Defaults are opt_{original_filename}.
+    /// Names of the output files.
+    ///
+    /// If given, must have the same length as file_names. Default output file names are opt_{original_filename}.
     #[arg(short, long, num_args = 1..)]
     output_file_names: Vec<PathBuf>,
 }
 
 impl Optimizer {
-    fn apply_optimizations_on_nodes(&self, nodes: Vec<Node>) -> Result<Vec<Node>, ParserError> {
+    fn apply_optimizations_on_nodes(&self, nodes: Vec<Node>) -> Result<Vec<Node>> {
         let mut nodes = nodes;
 
         macro_rules! apply_optimizations {
@@ -82,11 +84,7 @@ impl Optimizer {
         }
     }
 
-    fn optimize_file(
-        &self,
-        input_path: &Path,
-        output_path_arg: Option<&Path>,
-    ) -> Result<(), ParserError> {
+    fn optimize_file(&self, input_path: &Path, output_path_arg: Option<&Path>) -> Result<()> {
         let file = File::open(input_path)?;
         let file = BufReader::new(file);
         let mut parser = Parser::new(file)?;
@@ -101,7 +99,7 @@ impl Optimizer {
         Ok(())
     }
 
-    pub fn optimize(&self) -> Result<(), ParserError> {
+    pub fn optimize(&self) -> Result<()> {
         if self.output_file_names.is_empty() {
             for input_path in self.file_names.iter() {
                 self.optimize_file(input_path, None)?;
@@ -119,24 +117,24 @@ impl Optimizer {
 
 #[cfg(test)]
 mod tests {
-    use clap::{Error, Parser};
+    use super::*;
+    use clap::Parser;
     use itertools::assert_equal;
 
-    use super::*;
-
     #[test]
-    fn test_parse_file_names_no_outputs() -> Result<(), Error> {
+    fn test_parse_file_names_no_outputs() -> Result<()> {
         let optimizer = Optimizer::try_parse_from(vec![
             "main.exe",
             "abc.svg",
             "--remove-attr-whitespace",
             "somedir/xd.svg",
             "--remove-useless-groups",
+            "abcd.svg",
         ])?;
 
         assert_equal(
             optimizer.file_names.iter().map(|file| file.as_os_str()),
-            vec!["abc.svg", "somedir/xd.svg"],
+            vec!["abc.svg", "somedir/xd.svg", "abcd.svg"],
         );
         assert!(optimizer.output_file_names.is_empty());
         assert!(!optimizer.remove_comments);
@@ -147,7 +145,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_file_names_with_outputs() -> Result<(), Error> {
+    fn test_parse_file_names_with_outputs() -> Result<()> {
         let optimizer = Optimizer::try_parse_from(vec![
             "main.exe",
             "abc.svg",

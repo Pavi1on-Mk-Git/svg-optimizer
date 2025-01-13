@@ -27,7 +27,6 @@ pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::errors::ParserError;
     use crate::optimizations::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
