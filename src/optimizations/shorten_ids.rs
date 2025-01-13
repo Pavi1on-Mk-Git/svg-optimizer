@@ -125,21 +125,21 @@ mod tests {
     test_optimize!(
         test_shorten_ids,
         shorten_ids,
-        "\
-        <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <rect id=\"smallRect1\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"mediumRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"largeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"hugeRect\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        </svg>\
-        ",
-        "\
-        <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <rect id=\"a\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"b\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"c\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        <rect id=\"d\" x=\"10\" y=\"10\" width=\"100\" height=\"100\"/>\
-        </svg>\
-        "
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <rect id="smallRect1" x="10" y="10" width="100" height="100"/>
+        <rect id="mediumRect" x="10" y="10" width="100" height="100"/>
+        <rect id="largeRect" x="10" y="10" width="100" height="100"/>
+        <rect id="hugeRect" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <rect id="a" x="10" y="10" width="100" height="100"/>
+        <rect id="b" x="10" y="10" width="100" height="100"/>
+        <rect id="c" x="10" y="10" width="100" height="100"/>
+        <rect id="d" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "#
     );
 }

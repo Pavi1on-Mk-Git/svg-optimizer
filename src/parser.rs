@@ -184,8 +184,8 @@ mod tests {
     fn test_badly_nested_tags() -> Result<()> {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
-            <circle cx=\"100\" cy=\"50\" r=\"50\">
-            <rect x=\"10\" y=\"10\" width=\"100\" height=\"100\">\
+            <circle cx="100" cy="50" r="50">
+            <rect x="10" y="10" width="100" height="100">
             </circle>
             </rect>
             </svg>

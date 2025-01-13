@@ -41,15 +41,13 @@ mod tests {
     test_optimize!(
         test_remove_attr_whitespace,
         remove_attr_whitespace,
-        "\
-        <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <path d=\"M150        5 L75 \n200    L225\t 200 Z      \"/>\
-        </svg>\
-        ",
-        "\
-        <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <path d=\"M150 5 L75 200 L225 200 Z\"/>\
-        </svg>\
-        "
+        "<svg xmlns=\"http://www.w3.org/2000/svg\">
+        <path d=\"M150        5 L75 \n200    L225\t 200 Z      \"/>
+        </svg>",
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <path d="M150 5 L75 200 L225 200 Z"/>
+        </svg>
+        "#
     );
 }

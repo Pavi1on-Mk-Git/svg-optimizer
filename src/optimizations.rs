@@ -28,10 +28,10 @@ use_optimizations!(
 #[cfg(test)]
 pub mod test {
     macro_rules! test_optimize {
-        ($test_name:ident, $tested_fn:ident, $test_str:literal, $result:literal) => {
+        ($test_name:ident, $tested_fn:ident, $test_str:literal, $expected:literal) => {
             #[test]
             fn $test_name() -> anyhow::Result<()> {
-                let test_string = $test_str;
+                let test_string = $test_str.trim();
 
                 let mut parser = Parser::new(test_string.as_bytes())?;
                 let nodes = parser.parse_document()?;
@@ -42,9 +42,9 @@ pub mod test {
                 let mut writer = SVGWriter::new(buffer);
                 writer.write(nodes)?;
 
-                let result = String::from_utf8(writer.into_inner()).unwrap();
+                let actual = String::from_utf8(writer.into_inner()).unwrap();
 
-                assert_eq!(result, $result);
+                assert_eq!(actual, $expected.trim());
 
                 Ok(())
             }

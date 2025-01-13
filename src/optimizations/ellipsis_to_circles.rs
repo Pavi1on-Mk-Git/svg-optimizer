@@ -87,15 +87,15 @@ mod tests {
     test_optimize!(
         test_ellipsis_to_circles,
         ellipsis_to_circles,
-        "\
-        <svg viewBox=\"0 0 200 100\" xmlns=\"http://www.w3.org/2000/svg\">\
-        <ellipse cx=\"100\" cy=\"50\" rx=\"50\" ry=\"50\"/>\
-        </svg>\
-        ",
-        "\
-        <svg viewBox=\"0 0 200 100\" xmlns=\"http://www.w3.org/2000/svg\">\
-        <circle cx=\"100\" cy=\"50\" r=\"50\"/>\
-        </svg>\
-        "
+        r#"
+        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="100" cy="50" rx="50" ry="50"/>
+        </svg>
+        "#,
+        r#"
+        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="50" r="50"/>
+        </svg>
+        "#
     );
 }

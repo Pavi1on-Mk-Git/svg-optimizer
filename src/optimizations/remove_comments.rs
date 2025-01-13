@@ -34,15 +34,13 @@ mod tests {
     test_optimize!(
         test_remove_comments,
         remove_comments,
-        "\
-        <!-- comment -->\
-        <svg xmlns=\"http://www.w3.org/2000/svg\">\
-        <!-- comment -->\
-        </svg>\
-        <!-- comment -->\
-        ",
-        "\
-        <svg xmlns=\"http://www.w3.org/2000/svg\"/>\
-        "
+        r#"
+        <!-- comment -->
+        <svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>
+        <!-- comment -->
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg"/>
+        "#
     );
 }
