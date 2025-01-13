@@ -42,7 +42,7 @@ impl RegularNodeType {
 macro_rules! conversions {
     ($([$node_type:ident, $name:literal]),*) => {
 
-        #[derive(Debug)]
+        #[derive(Debug, PartialEq, Eq)]
         pub enum RegularNodeType {
             Svg(Option<String>),
             Unknown(String),

@@ -139,6 +139,41 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_nested_svg_tag() -> Result<()> {
+        let test_string = r#"
+            <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
+            <svg width="320" height="130"><circle cx="50" cy="50" r="5"/></svg>
+            </svg>
+            "#;
+
+        let mut parser = Parser::new(test_string.as_bytes())?;
+
+        let nodes = parser.parse_document()?;
+
+        assert_eq!(nodes.len(), 1);
+        let only_node = nodes.into_iter().nth(0).unwrap();
+        match only_node {
+            RegularNode {
+                node_type,
+                attributes,
+                children,
+            } => {
+                assert_eq!(
+                    node_type,
+                    RegularNodeType::Svg(Some("http://www.w3.org/2000/svg".into()))
+                );
+                assert_eq!(attributes.len(), 2);
+                assert_eq!(children.len(), 3); // 2 whitespace children
+            }
+            _ => {
+                panic!();
+            }
+        }
+
+        Ok(())
+    }
+
+    #[test]
     fn test_parse_oneline_tag() -> Result<()> {
         let test_string = r#"
             <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg"/>
