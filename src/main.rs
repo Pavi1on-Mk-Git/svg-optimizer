@@ -10,5 +10,7 @@ use optimizer::Optimizer;
 
 fn main() {
     let optimizer = Optimizer::parse();
-    optimizer.optimize();
+    if let Err(opt_error) = optimizer.optimize() {
+        println!("An error has occurred: {}", opt_error);
+    }
 }
