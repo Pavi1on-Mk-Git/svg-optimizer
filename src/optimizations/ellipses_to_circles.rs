@@ -3,14 +3,14 @@ use crate::node::Node;
 use crate::node::RegularNodeType;
 use xml::attribute::OwnedAttribute;
 
-fn ellipsis_to_circles_from_node(node: Node) -> Option<Node> {
+fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
     Some(match node {
         Node::RegularNode {
             node_type: RegularNodeType::Ellipse,
             attributes,
             children,
         } => {
-            let children = ellipsis_to_circles(children);
+            let children = ellipses_to_circles(children);
 
             let (node_type, attributes) = match circle_attributes(attributes) {
                 Ok(attributes) => (RegularNodeType::Circle, attributes),
@@ -30,7 +30,7 @@ fn ellipsis_to_circles_from_node(node: Node) -> Option<Node> {
         } => Node::RegularNode {
             node_type,
             attributes,
-            children: ellipsis_to_circles(children),
+            children: ellipses_to_circles(children),
         },
         childless_node => childless_node,
     })
@@ -73,8 +73,8 @@ fn circle_attributes(
     }
 }
 
-pub fn ellipsis_to_circles(nodes: Vec<Node>) -> Vec<Node> {
-    apply_to_nodes(nodes, ellipsis_to_circles_from_node)
+pub fn ellipses_to_circles(nodes: Vec<Node>) -> Vec<Node> {
+    apply_to_nodes(nodes, ellipses_to_circles_from_node)
 }
 
 #[cfg(test)]
@@ -85,8 +85,8 @@ mod tests {
     use crate::writer::SVGWriter;
 
     test_optimize!(
-        test_ellipsis_to_circles,
-        ellipsis_to_circles,
+        test_ellipses_to_circles,
+        ellipses_to_circles,
         r#"
         <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="100" cy="50" rx="50" ry="50"/>

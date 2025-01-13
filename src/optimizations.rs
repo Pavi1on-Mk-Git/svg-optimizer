@@ -18,7 +18,7 @@ macro_rules! use_optimizations {
 }
 
 use_optimizations!(
-    ellipsis_to_circles,
+    ellipses_to_circles,
     remove_comments,
     remove_useless_groups,
     shorten_ids,

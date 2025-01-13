@@ -14,30 +14,6 @@ use std::path::PathBuf;
 #[derive(clap::Parser)]
 #[command(version)]
 pub struct Optimizer {
-    /// Remove all comments.
-    #[arg(long)]
-    remove_comments: bool,
-
-    /// Remove useless groups.
-    ///
-    /// A group is considered useless if it contains a single node or no nodes.
-    #[arg(long)]
-    remove_useless_groups: bool,
-
-    /// Convert ellipses to circles if their `rx` and `ry` are equal.
-    #[arg(long)]
-    ellipsis_to_circles: bool,
-
-    /// Shorten id names.
-    ///
-    /// Convert id names to be as short as possible. New names will always be created from latin alphabet letters and digits.
-    #[arg(long)]
-    shorten_ids: bool,
-
-    /// Remove excess whitespace from attributes.
-    #[arg(long)]
-    remove_attr_whitespace: bool,
-
     /// Names of the files to optimize.
     #[arg(num_args = 1..)]
     file_names: Vec<PathBuf>,
@@ -47,6 +23,30 @@ pub struct Optimizer {
     /// If given, must have the same length as file_names. Default output file names are opt_{original_filename}.
     #[arg(short, long, num_args = 1..)]
     output_file_names: Vec<PathBuf>,
+
+    /// Remove all comments.
+    #[arg(long)]
+    no_remove_comments: bool,
+
+    /// Do not remove useless groups.
+    ///
+    /// A group is considered useless if it contains a single node or no nodes.
+    #[arg(long)]
+    no_remove_useless_groups: bool,
+
+    /// Do not convert ellipses to circles if their `rx` and `ry` are equal.
+    #[arg(long)]
+    no_ellipses_to_circles: bool,
+
+    /// Do not shorten id names.
+    ///
+    /// Convert id names to be as short as possible. New names will always be created from latin alphabet letters and digits.
+    #[arg(long)]
+    no_shorten_ids: bool,
+
+    /// Do not remove excess whitespace from attributes.
+    #[arg(long)]
+    no_remove_attr_whitespace: bool,
 }
 
 impl Optimizer {
@@ -54,9 +54,9 @@ impl Optimizer {
         let mut nodes = nodes;
 
         macro_rules! apply_optimizations {
-            ($($optimization:ident),*) => {
+            ($([$flag:ident,$optimization:ident]),*) => {
                 $(
-                    if self.$optimization {
+                    if !self.$flag {
                         nodes = $optimization(nodes);
                     }
                 )*
@@ -64,11 +64,11 @@ impl Optimizer {
         }
 
         apply_optimizations!(
-            remove_comments,
-            remove_useless_groups,
-            ellipsis_to_circles,
-            shorten_ids,
-            remove_attr_whitespace
+            [no_remove_comments, remove_comments],
+            [no_remove_useless_groups, remove_useless_groups],
+            [no_ellipses_to_circles, ellipses_to_circles],
+            [no_shorten_ids, shorten_ids],
+            [no_remove_attr_whitespace, remove_attr_whitespace]
         );
 
         Ok(nodes)
@@ -144,9 +144,9 @@ mod tests {
         let optimizer = Optimizer::try_parse_from(vec![
             "main.exe",
             "abc.svg",
-            "--remove-attr-whitespace",
+            "--no-remove-attr-whitespace",
             "somedir/xd.svg",
-            "--remove-useless-groups",
+            "--no-remove-useless-groups",
             "abcd.svg",
         ])?;
 
@@ -155,9 +155,9 @@ mod tests {
             vec!["abc.svg", "somedir/xd.svg", "abcd.svg"],
         );
         assert!(optimizer.output_file_names.is_empty());
-        assert!(!optimizer.remove_comments);
-        assert!(optimizer.remove_attr_whitespace);
-        assert!(optimizer.remove_useless_groups);
+        assert!(!optimizer.no_remove_comments);
+        assert!(optimizer.no_remove_attr_whitespace);
+        assert!(optimizer.no_remove_useless_groups);
 
         Ok(())
     }
@@ -172,7 +172,7 @@ mod tests {
             "abc2.svg",
             "somedir_321/xd.svg",
             "abcd.svg",
-            "--remove-comments",
+            "--no-remove-comments",
             "abcd.svg",
         ])?;
 
@@ -187,9 +187,9 @@ mod tests {
                 .map(|file| file.as_os_str()),
             vec!["abc2.svg", "somedir_321/xd.svg", "abcd.svg"],
         );
-        assert!(optimizer.remove_comments);
-        assert!(!optimizer.remove_attr_whitespace);
-        assert!(!optimizer.remove_useless_groups);
+        assert!(optimizer.no_remove_comments);
+        assert!(!optimizer.no_remove_attr_whitespace);
+        assert!(!optimizer.no_remove_useless_groups);
 
         Ok(())
     }
@@ -213,7 +213,7 @@ mod tests {
             "-o",
             "somedir_321/xd.svg",
             "abcd.svg",
-            "--remove-comments",
+            "--no-remove-comments",
             "abcd.svg",
         ])?;
 
