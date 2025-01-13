@@ -2,22 +2,20 @@ use crate::errors::ParserError;
 use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
-use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 use std::path::PathBuf;
 
-/// SVG file optimizer. Currently, saves the output files as opt_{original_filename}.
+/// Program that optimizes the size of SVG files.
 #[derive(clap::Parser)]
 #[command(version)]
 pub struct Optimizer {
-    /// Remove all comments from files
+    /// Remove all comments
     #[arg(long)]
     remove_comments: bool,
 
-    /// Remove useless groups
-    /// A group is considered useless if it contains a single node
+    /// Remove useless groups; a group is considered useless if it contains a single node or no nodes
     #[arg(long)]
     remove_useless_groups: bool,
 
@@ -25,61 +23,57 @@ pub struct Optimizer {
     #[arg(long)]
     ellipsis_to_circles: bool,
 
-    /// Convert ids to possibly short ones created from latin alphabet letters and digits
+    /// Convert id names to be as short as possible created from latin alphabet letters and digits
     #[arg(long)]
     shorten_ids: bool,
 
-    /// Remove superfluous whitespace from attributes
+    /// Remove excess whitespace from attributes
     #[arg(long)]
     remove_attr_whitespace: bool,
 
     /// Names of the files to optimize
     file_names: Vec<PathBuf>,
+
+    /// Names of the output files for each input file. Defaults are opt_{original_filename}
+    #[arg(short, long)]
+    output_file_names: Vec<PathBuf>,
 }
 
 impl Optimizer {
-    fn apply_optimizations(&self, file_path: &Path) -> Result<(), ParserError> {
-        let file = File::open(file_path)?;
+    fn optimize_file(&self, input_path: &Path, output_path: &Path) -> Result<(), ParserError> {
+        let file = File::open(input_path)?;
         let file = BufReader::new(file);
         let mut parser = Parser::new(file)?;
 
         let mut nodes = parser.parse_document()?;
 
-        if self.remove_comments {
-            nodes = remove_comments(nodes);
+        macro_rules! apply_optimizations {
+            ($($optimization:ident),*) => {
+                $(
+                    if self.$optimization {
+                        nodes = $optimization(nodes);
+                    }
+                )*
+            };
         }
 
-        if self.remove_useless_groups {
-            nodes = remove_useless_groups(nodes);
-        }
+        apply_optimizations!(
+            remove_comments,
+            remove_useless_groups,
+            ellipsis_to_circles,
+            shorten_ids,
+            remove_attr_whitespace
+        );
 
-        if self.ellipsis_to_circles {
-            nodes = ellipsis_to_circles(nodes);
-        }
-
-        if self.shorten_ids {
-            nodes = shorten_ids(nodes);
-        }
-
-        if self.remove_attr_whitespace {
-            nodes = remove_attr_whitespace(nodes);
-        }
-
-        let new_file_name = {
-            let mut new_file_string = OsString::from("opt_");
-            new_file_string.push(file_path.file_name().unwrap());
-            new_file_string
-        };
-
-        let new_file = File::create(new_file_name)?;
-        SVGWriter::new(new_file).write(nodes)?;
+        let output_file = File::create(output_path)?;
+        SVGWriter::new(output_file).write(nodes)?;
 
         Ok(())
     }
 
     pub fn optimize(&self) {
-        for file_name in self.file_names.iter() {
-            if let Err(opt_error) = self.apply_optimizations(file_name) {
+        for (input_path, output_path) in self.file_names.iter().zip(self.output_file_names.iter()) {
+            if let Err(opt_error) = self.optimize_file(input_path, output_path) {
                 println!("An error has occurred: {}", opt_error);
             }
         }
