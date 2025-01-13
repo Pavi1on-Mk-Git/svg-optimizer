@@ -14,7 +14,7 @@ impl fmt::Display for ErrorWithPosition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Error at line {}, column {} with message: {}",
+            "Error: {}:{} {}", // consistent with xml-rs errors
             self.position.row, self.position.column, self.message
         )?;
         Ok(())
