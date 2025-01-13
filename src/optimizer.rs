@@ -101,11 +101,9 @@ impl Optimizer {
     }
 
     fn validate_args(&self) -> Result<()> {
-        println!(
-            "out {} in {}",
-            self.output_file_names.len(),
-            self.file_names.len()
-        );
+        if self.file_names.is_empty() {
+            return Err(SimpleError::new("There must be at least one input file path").into());
+        }
 
         if !self.output_file_names.is_empty()
             && self.output_file_names.len() != self.file_names.len()
@@ -119,12 +117,6 @@ impl Optimizer {
     }
 
     pub fn optimize(&self) -> Result<()> {
-        println!(
-            "out {} in {}",
-            self.output_file_names.len(),
-            self.file_names.len()
-        );
-
         self.validate_args()?;
 
         if self.output_file_names.is_empty() {
@@ -200,6 +192,16 @@ mod tests {
         assert!(!optimizer.remove_attr_whitespace);
         assert!(!optimizer.remove_useless_groups);
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_no_input_files_validation_error() -> Result<()> {
+        let optimizer = Optimizer::try_parse_from(vec!["main.exe"])?;
+
+        let result = optimizer.optimize();
+
+        assert!(result.is_err());
         Ok(())
     }
 
