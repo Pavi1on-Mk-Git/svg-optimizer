@@ -1,6 +1,28 @@
-use std::error::Error;
+use std::error;
 use std::fmt;
 use xml::common::TextPosition;
+
+#[derive(Debug)]
+pub struct SimpleError {
+    pub message: String,
+}
+
+impl error::Error for SimpleError {}
+
+impl fmt::Display for SimpleError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error: {}", self.message)?;
+        Ok(())
+    }
+}
+
+impl SimpleError {
+    pub fn new(message: &str) -> SimpleError {
+        SimpleError {
+            message: message.into(),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct ErrorWithPosition {
@@ -8,7 +30,7 @@ pub struct ErrorWithPosition {
     pub position: TextPosition,
 }
 
-impl Error for ErrorWithPosition {}
+impl error::Error for ErrorWithPosition {}
 
 impl fmt::Display for ErrorWithPosition {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -22,7 +44,7 @@ impl fmt::Display for ErrorWithPosition {
 }
 
 impl ErrorWithPosition {
-    pub fn _new(message: String, position: TextPosition) -> Self {
-        Self { message, position }
+    pub fn _new(message: String, position: TextPosition) -> ErrorWithPosition {
+        ErrorWithPosition { message, position }
     }
 }

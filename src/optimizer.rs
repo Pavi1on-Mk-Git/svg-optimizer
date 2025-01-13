@@ -1,3 +1,4 @@
+use crate::errors::SimpleError;
 use crate::node::Node;
 use crate::optimizations::*;
 use crate::parser::Parser;
@@ -99,7 +100,33 @@ impl Optimizer {
         Ok(())
     }
 
+    fn validate_args(&self) -> Result<()> {
+        println!(
+            "out {} in {}",
+            self.output_file_names.len(),
+            self.file_names.len()
+        );
+
+        if !self.output_file_names.is_empty()
+            && self.output_file_names.len() != self.file_names.len()
+        {
+            return Err(SimpleError::new(
+                "There must be the same amount of output file paths and input file paths",
+            )
+            .into());
+        }
+        Ok(())
+    }
+
     pub fn optimize(&self) -> Result<()> {
+        println!(
+            "out {} in {}",
+            self.output_file_names.len(),
+            self.file_names.len()
+        );
+
+        self.validate_args()?;
+
         if self.output_file_names.is_empty() {
             for input_path in self.file_names.iter() {
                 self.optimize_file(input_path, None)?;
@@ -173,6 +200,25 @@ mod tests {
         assert!(!optimizer.remove_attr_whitespace);
         assert!(!optimizer.remove_useless_groups);
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_file_names_validation_error() -> Result<()> {
+        let optimizer = Optimizer::try_parse_from(vec![
+            "main.exe",
+            "abc.svg",
+            "somedir/xd.svg",
+            "-o",
+            "somedir_321/xd.svg",
+            "abcd.svg",
+            "--remove-comments",
+            "abcd.svg",
+        ])?;
+
+        let result = optimizer.optimize();
+
+        assert!(result.is_err());
         Ok(())
     }
 }
