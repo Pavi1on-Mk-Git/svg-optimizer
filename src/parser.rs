@@ -183,6 +183,25 @@ mod tests {
     }
 
     #[test]
+    fn test_badly_nested_tags() -> Result<()> {
+        let test_string = r#"
+            <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
+            <circle cx=\"100\" cy=\"50\" r=\"50\">
+            <rect x=\"10\" y=\"10\" width=\"100\" height=\"100\">\
+            </circle>
+            </rect>
+            </svg>
+            "#;
+
+        let mut parser = Parser::new(test_string.as_bytes())?;
+
+        let nodes = parser.parse_document();
+
+        assert!(nodes.is_err());
+        Ok(())
+    }
+
+    #[test]
     fn test_parse_non_tag() -> Result<()> {
         let test_string = r#"
             <!--Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In .SVG Version: 6.00 Build 0)-->
