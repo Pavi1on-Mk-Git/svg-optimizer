@@ -217,18 +217,23 @@ impl Iterator for NodeIter {
                 children_iter,
             } => {
                 if let Some(start_tag) = start_tag.take() {
+                    // starting iteration
                     Some(start_tag)
                 } else if let Some(iter) = child_iter {
+                    // currently iterating over a child
                     if let Some(element) = iter.next() {
                         Some(element)
                     } else {
+                        // switch to next child
                         *child_iter = None;
                         self.next()
                     }
                 } else if let Some(child) = children_iter.next() {
+                    // not iterating over a child, take next child
                     *child_iter = Some(Box::new(child.into_iter()));
                     self.next()
                 } else {
+                    // ran out of children, end
                     end_tag.take()
                 }
             }
