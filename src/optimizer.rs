@@ -102,17 +102,14 @@ impl Optimizer {
 
     fn validate_args(&self) -> Result<()> {
         if self.file_names.is_empty() {
-            return Err(Error::msg("There must be at least one input file path"));
-        }
-
-        if !self.output_file_names.is_empty()
-            && self.output_file_names.len() != self.file_names.len()
-        {
-            return Err(Error::msg(
+            Err(Error::msg("There must be at least one input file path"))
+        } else if self.output_file_names.len() != self.file_names.len() {
+            Err(Error::msg(
                 "There must be the same amount of output file paths and input file paths",
-            ));
+            ))
+        } else {
+            Ok(())
         }
-        Ok(())
     }
 
     pub fn optimize(&self) -> Result<()> {

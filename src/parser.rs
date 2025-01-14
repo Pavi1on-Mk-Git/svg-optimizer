@@ -151,7 +151,7 @@ mod tests {
         let nodes = parser.parse_document()?;
 
         assert_eq!(nodes.len(), 1);
-        let only_node = nodes.into_iter().nth(0).unwrap();
+        let only_node = nodes.into_iter().next().unwrap();
         match only_node {
             RegularNode {
                 node_type,
