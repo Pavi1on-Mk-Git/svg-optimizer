@@ -1,26 +1,21 @@
 use crate::node::Node;
 use anyhow::Result;
+use itertools::Itertools;
 
-pub fn _apply_to_nodes_err<F>(nodes: Vec<Node>, func: F) -> Result<Vec<Node>>
+pub fn _apply_to_nodes_err<I, F>(nodes: I, func: F) -> Result<Vec<Node>>
 where
+    I: IntoIterator<Item = Node>,
     F: Fn(Node) -> Result<Option<Node>>,
 {
-    let mut new_nodes = Vec::<Node>::with_capacity(nodes.len());
-
-    for node in nodes {
-        match func(node)? {
-            Some(new_node) => {
-                new_nodes.push(new_node);
-            }
-            None => {}
-        }
-    }
-
-    Ok(vec![])
+    nodes
+        .into_iter()
+        .map(func)
+        .process_results(|iter| iter.flatten().collect())
 }
 
-pub fn apply_to_nodes<F>(nodes: Vec<Node>, func: F) -> Vec<Node>
+pub fn apply_to_nodes<I, F>(nodes: I, func: F) -> Vec<Node>
 where
+    I: IntoIterator<Item = Node>,
     F: Fn(Node) -> Option<Node>,
 {
     nodes.into_iter().filter_map(func).collect()
@@ -47,8 +42,7 @@ macro_rules! use_optimizations {
         }
 
         impl Optimizations {
-            pub fn apply(&self, nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
-                let mut nodes = nodes;
+            pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
                 $(
                     if self.$optimization_name || (default_all && !self.$disable_flag_name) {
                         nodes = $optimization_name(nodes)?;
