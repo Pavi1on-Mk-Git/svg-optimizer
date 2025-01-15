@@ -1,6 +1,7 @@
 use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::Node::RegularNode;
+use anyhow::Result;
 use std::collections::BTreeMap;
 
 struct IdGenerator {
@@ -89,16 +90,18 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Option
         Some(RegularNode {
             node_type,
             attributes,
-            children: shorten_ids(children),
+            children: shorten_ids(children).unwrap(),
         })
     } else {
         Some(node)
     }
 }
 
-pub fn shorten_ids(nodes: Vec<Node>) -> Vec<Node> {
+pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
     let id_map = make_id_map(&nodes);
-    apply_to_nodes(nodes, |node| shorten_ids_for_node(node, &id_map))
+    Ok(apply_to_nodes(nodes, |node| {
+        shorten_ids_for_node(node, &id_map)
+    }))
 }
 
 #[cfg(test)]

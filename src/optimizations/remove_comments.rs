@@ -1,6 +1,7 @@
 use super::apply_to_nodes;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
+use anyhow::Result;
 
 fn remove_comments_from_node(node: Node) -> Option<Node> {
     match node {
@@ -11,7 +12,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
         } => Some(Node::RegularNode {
             node_type,
             attributes,
-            children: remove_comments(children),
+            children: remove_comments(children).unwrap(),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Comment(_),
@@ -20,8 +21,8 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
-    apply_to_nodes(nodes, remove_comments_from_node)
+pub fn remove_comments(nodes: Vec<Node>) -> Result<Vec<Node>> {
+    Ok(apply_to_nodes(nodes, remove_comments_from_node))
 }
 
 #[cfg(test)]

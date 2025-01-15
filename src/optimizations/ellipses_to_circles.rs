@@ -1,6 +1,7 @@
 use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::RegularNodeType;
+use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
 fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
@@ -10,7 +11,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
             attributes,
             children,
         } => {
-            let children = ellipses_to_circles(children);
+            let children = ellipses_to_circles(children).unwrap();
 
             let (node_type, attributes) = match circle_attributes(attributes) {
                 Ok(attributes) => (RegularNodeType::Circle, attributes),
@@ -30,7 +31,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
         } => Node::RegularNode {
             node_type,
             attributes,
-            children: ellipses_to_circles(children),
+            children: ellipses_to_circles(children).unwrap(),
         },
         childless_node => childless_node,
     })
@@ -73,8 +74,8 @@ fn circle_attributes(
     }
 }
 
-pub fn ellipses_to_circles(nodes: Vec<Node>) -> Vec<Node> {
-    apply_to_nodes(nodes, ellipses_to_circles_from_node)
+pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
+    Ok(apply_to_nodes(nodes, ellipses_to_circles_from_node))
 }
 
 #[cfg(test)]

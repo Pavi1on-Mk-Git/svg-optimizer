@@ -1,10 +1,9 @@
-use itertools::Itertools;
-use xml::attribute::OwnedAttribute;
-
+use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::Node::RegularNode;
-
-use super::apply_to_nodes;
+use anyhow::Result;
+use itertools::Itertools;
+use xml::attribute::OwnedAttribute;
 
 fn remove_attr_whitespace_from_node(node: Node) -> Option<Node> {
     Some(match node {
@@ -21,14 +20,14 @@ fn remove_attr_whitespace_from_node(node: Node) -> Option<Node> {
                     value: value.split_whitespace().join(" "),
                 })
                 .collect(),
-            children: remove_attr_whitespace(children),
+            children: remove_attr_whitespace(children).unwrap(),
         },
         other => other,
     })
 }
 
-pub fn remove_attr_whitespace(nodes: Vec<Node>) -> Vec<Node> {
-    apply_to_nodes(nodes, remove_attr_whitespace_from_node)
+pub fn remove_attr_whitespace(nodes: Vec<Node>) -> Result<Vec<Node>> {
+    Ok(apply_to_nodes(nodes, remove_attr_whitespace_from_node))
 }
 
 #[cfg(test)]

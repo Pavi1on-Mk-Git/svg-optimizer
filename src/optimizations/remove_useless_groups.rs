@@ -1,6 +1,7 @@
 use super::apply_to_nodes;
 use crate::node::Node;
 use crate::node::RegularNodeType;
+use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
 fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
@@ -10,7 +11,7 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
             attributes: parent_attr,
             children,
         } => {
-            let mut new_children = remove_useless_groups(children);
+            let mut new_children = remove_useless_groups(children).unwrap();
 
             if new_children.len() > 1 {
                 return Some(Node::RegularNode {
@@ -31,7 +32,7 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
         } => Some(Node::RegularNode {
             node_type,
             attributes,
-            children: remove_useless_groups(children),
+            children: remove_useless_groups(children).unwrap(),
         }),
         other => Some(other),
     }
@@ -72,8 +73,8 @@ fn merge_attributes(
     child
 }
 
-pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
-    apply_to_nodes(nodes, remove_useless_groups_from_node)
+pub fn remove_useless_groups(nodes: Vec<Node>) -> Result<Vec<Node>> {
+    Ok(apply_to_nodes(nodes, remove_useless_groups_from_node))
 }
 
 #[cfg(test)]

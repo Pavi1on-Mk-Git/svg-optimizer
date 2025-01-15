@@ -1,9 +1,26 @@
 use crate::node::Node;
 use anyhow::Result;
 
-pub fn apply_to_nodes<I, F>(nodes: I, func: F) -> Vec<Node>
+pub fn _apply_to_nodes_err<F>(nodes: Vec<Node>, func: F) -> Result<Vec<Node>>
 where
-    I: IntoIterator<Item = Node>,
+    F: Fn(Node) -> Result<Option<Node>>,
+{
+    let mut new_nodes = Vec::<Node>::with_capacity(nodes.len());
+
+    for node in nodes {
+        match func(node)? {
+            Some(new_node) => {
+                new_nodes.push(new_node);
+            }
+            None => {}
+        }
+    }
+
+    Ok(vec![])
+}
+
+pub fn apply_to_nodes<F>(nodes: Vec<Node>, func: F) -> Vec<Node>
+where
     F: Fn(Node) -> Option<Node>,
 {
     nodes.into_iter().filter_map(func).collect()
@@ -34,7 +51,7 @@ macro_rules! use_optimizations {
                 let mut nodes = nodes;
                 $(
                     if self.$optimization_name || (default_all && !self.$disable_flag_name) {
-                        nodes = $optimization_name(nodes);
+                        nodes = $optimization_name(nodes)?;
                     }
                 )*
 
@@ -63,7 +80,7 @@ use_optimizations!(
     [
         shorten_ids,
         no_shorten_ids,
-        "Convert id names to be as short as possible. New names will always be created from latin alphabet letters and digits.",
+        "Convert id names to be as short as possible. New names will only be created from latin alphabet letters and digits.",
     ],
     [
         remove_attr_whitespace,
@@ -87,7 +104,7 @@ pub mod test {
                 let mut parser = Parser::new(test_string.as_bytes())?;
                 let nodes = parser.parse_document()?;
 
-                let nodes = $tested_fn(nodes);
+                let nodes = $tested_fn(nodes)?;
 
                 let buffer = Vec::new();
                 let mut writer = SVGWriter::new(buffer);
@@ -102,8 +119,8 @@ pub mod test {
         };
     }
 
-    fn identity(nodes: Vec<Node>) -> Vec<Node> {
-        nodes
+    fn identity(nodes: Vec<Node>) -> Result<Vec<Node>> {
+        Ok(nodes)
     }
 
     test_optimize!(
