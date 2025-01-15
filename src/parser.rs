@@ -24,6 +24,7 @@ impl<R: Read> Parser<R> {
                 .ignore_comments(false)
                 .cdata_to_characters(true)
                 .whitespace_to_characters(true)
+                .ignore_root_level_whitespace(false)
                 .create_reader(source),
             curr_event: None,
         };
@@ -124,10 +125,8 @@ mod tests {
 
     #[test]
     fn test_parse_tag() -> Result<()> {
-        let test_string = r#"
-            <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
-            </svg>
-            "#;
+        let test_string =
+            r#"<svg width="320" height="130" xmlns="http://www.w3.org/2000/svg"></svg>"#;
 
         let mut parser = Parser::new(test_string.as_bytes())?;
 
@@ -140,11 +139,9 @@ mod tests {
 
     #[test]
     fn test_parse_nested_svg_tag() -> Result<()> {
-        let test_string = r#"
-            <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
-            <svg width="320" height="130"><circle cx="50" cy="50" r="5"/></svg>
-            </svg>
-            "#;
+        let test_string = r#"<svg width="320" height="130" xmlns="http://www.w3.org/2000/svg">
+                             <svg width="320" height="130"><circle cx="50" cy="50" r="5"/></svg>
+                             </svg>"#;
 
         let mut parser = Parser::new(test_string.as_bytes())?;
 
@@ -175,9 +172,7 @@ mod tests {
 
     #[test]
     fn test_parse_oneline_tag() -> Result<()> {
-        let test_string = r#"
-            <svg width="320" height="130" xmlns="http://www.w3.org/2000/svg"/>
-            "#;
+        let test_string = r#"<svg width="320" height="130" xmlns="http://www.w3.org/2000/svg"/>"#;
 
         let mut parser = Parser::new(test_string.as_bytes())?;
 
@@ -246,7 +241,7 @@ mod tests {
 
         let nodes = parser.parse_document()?;
 
-        assert_eq!(nodes.len(), 2);
+        assert_eq!(nodes.len(), 4); // 2 whitespace children
 
         Ok(())
     }

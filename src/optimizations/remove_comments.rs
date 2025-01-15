@@ -1,10 +1,29 @@
 use super::apply_to_nodes;
-use super::common::define_remove_childless_node;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
 use anyhow::Result;
 
-define_remove_childless_node!(remove_comments, Comment);
+fn remove_comments_from_node(node: Node) -> Option<Node> {
+    match node {
+        Node::RegularNode {
+            node_type,
+            attributes,
+            children,
+        } => Some(Node::RegularNode {
+            node_type,
+            attributes,
+            children: remove_comments(children).unwrap(),
+        }),
+        Node::ChildlessNode {
+            node_type: ChildlessNodeType::Comment(_),
+        } => None,
+        childless_node => Some(childless_node),
+    }
+}
+
+pub fn remove_comments(nodes: Vec<Node>) -> Result<Vec<Node>> {
+    Ok(apply_to_nodes(nodes, remove_comments_from_node))
+}
 
 #[cfg(test)]
 mod tests {
@@ -17,12 +36,12 @@ mod tests {
         test_remove_comments,
         remove_comments,
         r#"
-        <!-- comment -->
-        <svg xmlns="http://www.w3.org/2000/svg"><!-- comment --></svg>
-        <!-- comment -->
+        <!-- comment --><svg xmlns="http://www.w3.org/2000/svg">
+        <!-- comment --></svg><!-- comment -->
         "#,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg"/>
+        <svg xmlns="http://www.w3.org/2000/svg">
+        </svg>
         "#
     );
 }

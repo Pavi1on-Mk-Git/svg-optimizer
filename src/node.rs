@@ -4,6 +4,7 @@ use xml::name::OwnedName;
 use xml::namespace::Namespace;
 use xml::reader::XmlEvent;
 
+#[derive(Debug)]
 pub enum Node {
     RegularNode {
         node_type: RegularNodeType,
@@ -151,6 +152,7 @@ conversions!(
     [View, "view"]
 );
 
+#[derive(Debug)]
 pub enum ChildlessNodeType {
     ProcessingInstruction(String, Option<String>),
     Comment(String),

@@ -2,8 +2,6 @@ use crate::node::Node;
 use anyhow::Result;
 use itertools::Itertools;
 
-mod common;
-
 pub fn _apply_to_nodes_err<F>(nodes: Vec<Node>, func: F) -> Result<Vec<Node>>
 where
     F: Fn(Node) -> Result<Option<Node>>,
@@ -68,6 +66,11 @@ use_optimizations!(
         "Remove all comments.",
     ],
     [
+        remove_doctype,
+        no_remove_doctype,
+        "Remove DOCTYPE processing instruction.",
+    ],
+    [
         remove_useless_groups,
         no_remove_useless_groups,
         "Remove groups that contain a single node or no nodes.",
@@ -94,9 +97,7 @@ pub mod test {
         ($test_name:ident, $tested_fn:ident, $test_str:literal, $expected:literal) => {
             #[test]
             fn $test_name() -> anyhow::Result<()> {
-                let test_string = $test_str.trim();
-
-                let mut parser = Parser::new(test_string.as_bytes())?;
+                let mut parser = Parser::new($test_str.as_bytes())?;
                 let nodes = parser.parse_document()?;
 
                 let nodes = $tested_fn(nodes)?;
@@ -107,7 +108,7 @@ pub mod test {
 
                 let actual = String::from_utf8(writer.into_inner()).unwrap();
 
-                assert_eq!(actual, $expected.trim());
+                assert_eq!(actual, $expected.trim_end());
 
                 Ok(())
             }
