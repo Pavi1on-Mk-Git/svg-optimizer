@@ -1,0 +1,27 @@
+- ~~zmiana nazw `id` na minimalnej długości, usuwanie niepotrzebnych~~
+- ~~usuwanie znaków nowej linii i nadmiarowych spacji z atrybutów~~
+- ~~usuwanie `enable-background` w przypadku gdy odpowiada wymiarami wymiarom w tagu `svg`~~ - nieimplementowane, usunięte
+- zaokrąglanie liczb zmiennoprzecinkowych do określonej precyzji
+- ~~redukowanie niepotrzebnych grup~~
+- ~~konwertowanie elips będących kołami w koła~~
+- konwertowanie jednopunktowych gradientów w czysty kolor
+- łączenie transformacji w pojedynczą macierz
+- aplikowanie transformacji na ścieżki
+- łączenie ścieżek
+- łączenie styli
+- wyłączanie wspólnych atrybutów elementów grupy do atrybutów grupy
+- ~~usuwanie komentarzy~~
+- ~~usuwanie deklaracji `DOCTYPE`~~
+- usuwanie elementów: `<desc>`, `<metadata>`, `<title>`, `<xml>`
+- usuwanie przestrzeni nazw, elementów i atrybutów edytorów
+- usuwanie pustych atrybutów
+- usuwanie pustych kontenerów
+- usuwanie pustych elementów `<text>`, `<tspan>`, `<tref>`
+- zamiana atrybutów `width` i `height` na `viewBox`
+- usuwanie niewidocznych elementów
+- usuwanie ścieżek rysowanych poza ekranem
+- usuwanie nieużywanych przestrzeni nazw
+- usuwanie nieużywanych definicji
+- usuwanie bezużytecznych atrybutów `stroke` i `fill`
+- zamiana identycznych ścieżek na `<use>` tej samej ścieżki
+- sortowanie atrybutów dla lepszej kompresji
