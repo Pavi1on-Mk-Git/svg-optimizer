@@ -1,4 +1,5 @@
 use crate::node::Node;
+use anyhow::Result;
 
 pub fn apply_to_nodes<I, F>(nodes: I, func: F) -> Vec<Node>
 where
@@ -9,20 +10,44 @@ where
 }
 
 macro_rules! use_optimizations {
-    ($($fn_name:ident),*) => {
+    ($([$optimization_name:ident, $disable_flag_name:ident]),*) => {
         $(
-            mod $fn_name;
-            pub use $fn_name::$fn_name;
+            mod $optimization_name;
+            pub use $optimization_name::$optimization_name;
         )*
+
+        #[derive(clap::Parser)]
+        pub struct Optimizations {
+            $(
+                #[arg(long)]
+                pub $optimization_name: bool,
+
+                #[arg(long)]
+                pub $disable_flag_name: bool,
+            )*
+        }
+
+        impl Optimizations {
+            pub fn apply(&self, nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
+                let mut nodes = nodes;
+                $(
+                    if self.$optimization_name || (default_all && !self.$disable_flag_name) {
+                        nodes = $optimization_name(nodes);
+                    }
+                )*
+
+                Ok(nodes)
+            }
+        }
     };
 }
 
 use_optimizations!(
-    ellipses_to_circles,
-    remove_comments,
-    remove_useless_groups,
-    shorten_ids,
-    remove_attr_whitespace
+    [ellipses_to_circles, no_ellipses_to_circles],
+    [remove_comments, no_remove_comments],
+    [remove_useless_groups, no_remove_useless_groups],
+    [shorten_ids, no_shorten_ids],
+    [remove_attr_whitespace, no_remove_attr_whitespace]
 );
 
 #[cfg(test)]

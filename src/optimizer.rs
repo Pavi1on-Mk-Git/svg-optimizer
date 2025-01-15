@@ -1,4 +1,3 @@
-use crate::node::Node;
 use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
@@ -11,6 +10,9 @@ use std::path::Path;
 use std::path::PathBuf;
 
 /// Program that optimizes the size of SVG files.
+///
+/// By default, all optimizations that do not take parameters are enabled.
+/// See README for descriptions of each optimization.
 #[derive(clap::Parser)]
 #[command(version)]
 pub struct Optimizer {
@@ -24,56 +26,11 @@ pub struct Optimizer {
     #[arg(short, long, num_args = 1..)]
     output_file_names: Vec<PathBuf>,
 
-    /// Remove all comments.
-    #[arg(long)]
-    no_remove_comments: bool,
-
-    /// Do not remove useless groups.
-    ///
-    /// A group is considered useless if it contains a single node or no nodes.
-    #[arg(long)]
-    no_remove_useless_groups: bool,
-
-    /// Do not convert ellipses to circles if their `rx` and `ry` are equal.
-    #[arg(long)]
-    no_ellipses_to_circles: bool,
-
-    /// Do not shorten id names.
-    ///
-    /// Convert id names to be as short as possible. New names will always be created from latin alphabet letters and digits.
-    #[arg(long)]
-    no_shorten_ids: bool,
-
-    /// Do not remove excess whitespace from attributes.
-    #[arg(long)]
-    no_remove_attr_whitespace: bool,
+    #[command(flatten)]
+    optimizations: Optimizations,
 }
 
 impl Optimizer {
-    fn apply_optimizations_on_nodes(&self, nodes: Vec<Node>) -> Result<Vec<Node>> {
-        let mut nodes = nodes;
-
-        macro_rules! apply_optimizations {
-            ($([$flag:ident,$optimization:ident]),*) => {
-                $(
-                    if !self.$flag {
-                        nodes = $optimization(nodes);
-                    }
-                )*
-            };
-        }
-
-        apply_optimizations!(
-            [no_remove_comments, remove_comments],
-            [no_remove_useless_groups, remove_useless_groups],
-            [no_ellipses_to_circles, ellipses_to_circles],
-            [no_shorten_ids, shorten_ids],
-            [no_remove_attr_whitespace, remove_attr_whitespace]
-        );
-
-        Ok(nodes)
-    }
-
     fn get_output_path(input_path: &Path, output_path_arg: Option<&Path>) -> PathBuf {
         match output_path_arg {
             Some(path) => path.to_path_buf(),
@@ -91,7 +48,7 @@ impl Optimizer {
         let mut parser = Parser::new(file)?;
 
         let nodes = parser.parse_document()?;
-        let optimized = self.apply_optimizations_on_nodes(nodes)?;
+        let optimized = self.optimizations.apply(nodes, true)?;
 
         let output_path = Self::get_output_path(input_path, output_path_arg);
         let output_file = File::create(output_path)?;
@@ -152,9 +109,9 @@ mod tests {
             vec!["abc.svg", "somedir/xd.svg", "abcd.svg"],
         );
         assert!(optimizer.output_file_names.is_empty());
-        assert!(!optimizer.no_remove_comments);
-        assert!(optimizer.no_remove_attr_whitespace);
-        assert!(optimizer.no_remove_useless_groups);
+        assert!(!optimizer.optimizations.no_remove_comments);
+        assert!(optimizer.optimizations.no_remove_attr_whitespace);
+        assert!(optimizer.optimizations.no_remove_useless_groups);
 
         Ok(())
     }
@@ -184,9 +141,9 @@ mod tests {
                 .map(|file| file.as_os_str()),
             vec!["abc2.svg", "somedir_321/xd.svg", "abcd.svg"],
         );
-        assert!(optimizer.no_remove_comments);
-        assert!(!optimizer.no_remove_attr_whitespace);
-        assert!(!optimizer.no_remove_useless_groups);
+        assert!(optimizer.optimizations.no_remove_comments);
+        assert!(!optimizer.optimizations.no_remove_attr_whitespace);
+        assert!(!optimizer.optimizations.no_remove_useless_groups);
 
         Ok(())
     }
