@@ -1,6 +1,6 @@
 - ~~zmiana nazw `id` na minimalnej długości, usuwanie niepotrzebnych~~
 - ~~usuwanie znaków nowej linii i nadmiarowych spacji z atrybutów~~
-- ~~usuwanie `enable-background` w przypadku gdy odpowiada wymiarami wymiarom w tagu `svg`~~ - nieimplementowane, usunięte
+- ~~usuwanie `enable-background` w przypadku gdy odpowiada wymiarami wymiarom w tagu `svg` - nieimplementowane, usunięte~~
 - zaokrąglanie liczb zmiennoprzecinkowych do określonej precyzji
 - ~~redukowanie niepotrzebnych grup~~
 - ~~konwertowanie elips będących kołami w koła~~
@@ -12,7 +12,7 @@
 - wyłączanie wspólnych atrybutów elementów grupy do atrybutów grupy
 - ~~usuwanie komentarzy~~
 - ~~usuwanie deklaracji `DOCTYPE`~~
-- usuwanie elementów: `<desc>`, `<metadata>`, `<title>`, `<xml>`
+- ~~usuwanie elementów: `<desc>`, `<metadata>`, `<title>`,~~ `<xml>`
 - usuwanie przestrzeni nazw, elementów i atrybutów edytorów
 - usuwanie pustych atrybutów
 - usuwanie pustych kontenerów

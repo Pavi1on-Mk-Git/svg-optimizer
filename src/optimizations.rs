@@ -79,6 +79,11 @@ use_optimizations!(
         "Remove DOCTYPE processing instruction.",
     ],
     [
+        remove_descriptions,
+        no_remove_descriptions,
+        "Remove <title>, <metadata>, <desc> tags and their contents.",
+    ],
+    [
         remove_useless_groups,
         no_remove_useless_groups,
         "Remove groups that contain a single node or no nodes.",
