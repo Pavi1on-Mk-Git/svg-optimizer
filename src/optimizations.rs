@@ -89,6 +89,11 @@ use_optimizations!(
         "Convert id names to be as short as possible. New names will only be created from latin alphabet letters and digits.",
     ],
     [
+        remove_useless_ids,
+        no_remove_useless_ids,
+        "Removed unused ids.",
+    ],
+    [
         remove_attr_whitespace,
         no_remove_attr_whitespace,
         "Remove excess whitespace from attributes.",

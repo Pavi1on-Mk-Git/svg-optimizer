@@ -95,7 +95,7 @@ fn replace_id_in_attribute(
         let (first, rest) = attribute.value.split_at(1);
         if first == "#" {
             if let Some(new_id) = id_map.get(rest) {
-                attribute.value = "#".to_owned() + new_id;
+                attribute.value = format!("#{}", new_id);
             }
         }
     }
@@ -109,9 +109,7 @@ fn replace_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> No
     } = style_child
     {
         for (old_id, new_id) in id_map {
-            let pattern = "#".to_owned() + old_id;
-            let replace_with = "#".to_owned() + new_id;
-            text = text.replace(&pattern, &replace_with);
+            text = text.replace(&format!("#{}", old_id), &format!("#{}", new_id));
         }
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(text),
