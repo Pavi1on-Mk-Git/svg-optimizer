@@ -1,29 +1,10 @@
 use super::apply_to_nodes;
+use super::common::define_remove_childless_node;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
 use anyhow::Result;
 
-fn remove_comments_from_node(node: Node) -> Option<Node> {
-    match node {
-        Node::RegularNode {
-            node_type,
-            attributes,
-            children,
-        } => Some(Node::RegularNode {
-            node_type,
-            attributes,
-            children: remove_comments(children).unwrap(),
-        }),
-        Node::ChildlessNode {
-            node_type: ChildlessNodeType::Comment(_),
-        } => None,
-        childless_node => Some(childless_node),
-    }
-}
-
-pub fn remove_comments(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(nodes, remove_comments_from_node))
-}
+define_remove_childless_node!(remove_comments, Comment);
 
 #[cfg(test)]
 mod tests {

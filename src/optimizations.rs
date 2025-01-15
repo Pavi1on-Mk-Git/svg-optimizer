@@ -2,9 +2,10 @@ use crate::node::Node;
 use anyhow::Result;
 use itertools::Itertools;
 
-pub fn _apply_to_nodes_err<I, F>(nodes: I, func: F) -> Result<Vec<Node>>
+mod common;
+
+pub fn _apply_to_nodes_err<F>(nodes: Vec<Node>, func: F) -> Result<Vec<Node>>
 where
-    I: IntoIterator<Item = Node>,
     F: Fn(Node) -> Result<Option<Node>>,
 {
     nodes
