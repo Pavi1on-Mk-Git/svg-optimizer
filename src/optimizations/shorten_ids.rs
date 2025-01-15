@@ -1,8 +1,8 @@
-use super::apply_to_nodes;
-use crate::node::Node;
-use crate::node::Node::RegularNode;
+use super::{apply, apply_option};
+use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
+use xml::attribute::OwnedAttribute;
 
 struct IdGenerator {
     base_characters: Vec<char>,
@@ -39,68 +39,120 @@ impl Iterator for IdGenerator {
 
         self.generated_ids += 1;
 
-        Some(
+        let res = Some(
             char_ids
                 .into_iter()
                 .map(|id| self.base_characters[id])
                 .collect(),
-        )
+        );
+        println!("generator {:?}", res);
+        res
     }
 }
 
-fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
-    let mut map = BTreeMap::new();
+fn find_id(attributes: &Vec<OwnedAttribute>) -> Option<String> {
+    attributes
+        .iter()
+        .find(|attr| attr.name.local_name == "id")
+        .map(|id| id.value.clone())
+}
+
+fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
     let mut ids = vec![];
 
     for node in nodes {
-        if let RegularNode {
+        if let Node::RegularNode {
             attributes,
             children,
             ..
         } = node
         {
-            if let Some(id) = attributes.iter().find(|attr| attr.name.local_name == "id") {
-                ids.push(id.value.clone());
+            if let Some(id) = find_id(attributes) {
+                ids.push(id);
             }
-            map.extend(make_id_map(children));
+
+            ids.extend(find_ids_for_subtree(children));
         }
     }
 
-    map.extend(ids.into_iter().zip(IdGenerator::new()));
-    map
+    ids
 }
 
-fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Option<Node> {
-    if let RegularNode {
-        node_type,
-        attributes,
-        children,
-    } = node
-    {
-        let attributes = attributes
-            .into_iter()
-            .map(|mut attr| {
-                if attr.name.local_name == "id" {
-                    attr.value = id_map[&attr.value].clone();
-                }
-                attr
-            })
-            .collect();
+fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
+    let ids = find_ids_for_subtree(nodes);
+    BTreeMap::from_iter(ids.into_iter().zip(IdGenerator::new()))
+}
 
-        Some(RegularNode {
+fn replace_id_in_attribute(
+    mut attribute: OwnedAttribute,
+    id_map: &BTreeMap<String, String>,
+) -> OwnedAttribute {
+    if attribute.name.local_name == "id" {
+        attribute.value = id_map[&attribute.value].clone();
+    }
+
+    if attribute.name.local_name == "href" {
+        let (first, rest) = attribute.value.split_at(1);
+        if first == "#" {
+            if let Some(new_id) = id_map.get(rest) {
+                attribute.value = "#".to_owned() + new_id;
+            }
+        }
+    }
+
+    attribute
+}
+
+fn replace_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> Node {
+    if let Node::ChildlessNode {
+        node_type: ChildlessNodeType::Text(mut text),
+    } = style_child
+    {
+        for (old_id, new_id) in id_map {
+            let pattern = "#".to_owned() + old_id;
+            let replace_with = "#".to_owned() + new_id;
+            text = text.replace(&pattern, &replace_with);
+        }
+        Node::ChildlessNode {
+            node_type: ChildlessNodeType::Text(text),
+        }
+    } else {
+        style_child
+    }
+}
+
+fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
+    match node {
+        Node::RegularNode {
+            node_type: RegularNodeType::Style,
+            attributes,
+            children,
+        } => Node::RegularNode {
+            node_type: RegularNodeType::Style,
+            attributes: apply(attributes, |attribute| {
+                replace_id_in_attribute(attribute, id_map)
+            }),
+            children: apply(children, |child| replace_id_in_css(child, id_map)),
+        },
+        Node::RegularNode {
             node_type,
             attributes,
-            children: shorten_ids(children).unwrap(),
-        })
-    } else {
-        Some(node)
+            children,
+        } => Node::RegularNode {
+            node_type,
+            attributes: apply(attributes, |attribute| {
+                replace_id_in_attribute(attribute, id_map)
+            }),
+            children: apply(children, |child| shorten_ids_for_node(child, id_map)),
+        },
+        other => other,
     }
 }
 
 pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
     let id_map = make_id_map(&nodes);
-    Ok(apply_to_nodes(nodes, |node| {
-        shorten_ids_for_node(node, &id_map)
+    Ok(apply_option(nodes, |node| {
+        Some(shorten_ids_for_node(node, &id_map))
     }))
 }
 
@@ -130,7 +182,9 @@ mod tests {
         shorten_ids,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
-        <rect id="smallRect1" x="10" y="10" width="100" height="100"/>
+        <rect id="smallRect1" x="10" y="10" width="100" height="100">
+            <rect id="nestedRect" x="10" y="10" width="100" height="100"/>
+        </rect>
         <rect id="mediumRect" x="10" y="10" width="100" height="100"/>
         <rect id="largeRect" x="10" y="10" width="100" height="100"/>
         <rect id="hugeRect" x="10" y="10" width="100" height="100"/>
@@ -138,11 +192,54 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
-        <rect id="a" x="10" y="10" width="100" height="100"/>
-        <rect id="b" x="10" y="10" width="100" height="100"/>
+        <rect id="a" x="10" y="10" width="100" height="100">
+            <rect id="b" x="10" y="10" width="100" height="100"/>
+        </rect>
         <rect id="c" x="10" y="10" width="100" height="100"/>
         <rect id="d" x="10" y="10" width="100" height="100"/>
+        <rect id="e" x="10" y="10" width="100" height="100"/>
         </svg>
         "#
+    );
+
+    test_optimize!(
+        test_shorten_id_references,
+        shorten_ids,
+        r##"
+        <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            #smallRect {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            #unused {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+        </style>
+
+        <use href="#smallRect" x="10" fill="blue" />
+        <use href="#unused" x="10" fill="blue" />
+        <rect id="smallRect" x="10" y="10" width="100" height="100" />
+        </svg>
+        "##,
+        r##"
+        <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            #a {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            #unused {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+        </style>
+
+        <use href="#a" x="10" fill="blue"/>
+        <use href="#unused" x="10" fill="blue"/>
+        <rect id="a" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "##
     );
 }

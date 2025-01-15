@@ -2,9 +2,9 @@ use crate::node::Node;
 use anyhow::Result;
 use itertools::Itertools;
 
-pub fn _apply_to_nodes_err<F>(nodes: Vec<Node>, func: F) -> Result<Vec<Node>>
+pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
 where
-    F: Fn(Node) -> Result<Option<Node>>,
+    F: Fn(T) -> Result<Option<T>>,
 {
     nodes
         .into_iter()
@@ -12,12 +12,20 @@ where
         .process_results(|iter| iter.flatten().collect())
 }
 
-pub fn apply_to_nodes<I, F>(nodes: I, func: F) -> Vec<Node>
+pub fn apply_option<I, T, F>(nodes: I, func: F) -> Vec<T>
 where
-    I: IntoIterator<Item = Node>,
-    F: Fn(Node) -> Option<Node>,
+    I: IntoIterator<Item = T>,
+    F: Fn(T) -> Option<T>,
 {
     nodes.into_iter().filter_map(func).collect()
+}
+
+pub fn apply<I, T, F>(nodes: I, func: F) -> Vec<T>
+where
+    I: IntoIterator<Item = T>,
+    F: Fn(T) -> T,
+{
+    nodes.into_iter().map(func).collect()
 }
 
 macro_rules! use_optimizations {

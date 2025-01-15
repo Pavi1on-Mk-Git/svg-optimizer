@@ -1,4 +1,4 @@
-use super::apply_to_nodes;
+use super::apply_option;
 use crate::node::Node::RegularNode;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
@@ -34,7 +34,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(
+    Ok(apply_option(
         nodes,
         remove_whitespace_outside_tags_from_node,
     ))

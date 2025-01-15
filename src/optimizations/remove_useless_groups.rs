@@ -1,4 +1,4 @@
-use super::apply_to_nodes;
+use super::apply_option;
 use crate::node::Node;
 use crate::node::RegularNodeType;
 use anyhow::Result;
@@ -74,7 +74,7 @@ fn merge_attributes(
 }
 
 pub fn remove_useless_groups(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(nodes, remove_useless_groups_from_node))
+    Ok(apply_option(nodes, remove_useless_groups_from_node))
 }
 
 #[cfg(test)]

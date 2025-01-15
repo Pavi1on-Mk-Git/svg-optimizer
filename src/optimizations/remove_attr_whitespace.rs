@@ -1,4 +1,4 @@
-use super::apply_to_nodes;
+use super::apply_option;
 use crate::node::Node;
 use crate::node::Node::RegularNode;
 use anyhow::Result;
@@ -27,7 +27,7 @@ fn remove_attr_whitespace_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_attr_whitespace(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(nodes, remove_attr_whitespace_from_node))
+    Ok(apply_option(nodes, remove_attr_whitespace_from_node))
 }
 
 #[cfg(test)]

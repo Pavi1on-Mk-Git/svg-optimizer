@@ -1,4 +1,4 @@
-use super::apply_to_nodes;
+use super::apply_option;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
 use anyhow::Result;
@@ -22,7 +22,7 @@ fn remove_doctype_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_doctype(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(nodes, remove_doctype_from_node))
+    Ok(apply_option(nodes, remove_doctype_from_node))
 }
 
 #[cfg(test)]

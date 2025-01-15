@@ -1,4 +1,4 @@
-use super::apply_to_nodes;
+use super::apply_option;
 use crate::node::Node;
 use crate::node::RegularNodeType;
 use anyhow::Result;
@@ -75,7 +75,7 @@ fn circle_attributes(
 }
 
 pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_to_nodes(nodes, ellipses_to_circles_from_node))
+    Ok(apply_option(nodes, ellipses_to_circles_from_node))
 }
 
 #[cfg(test)]
