@@ -50,7 +50,7 @@ impl Iterator for IdGenerator {
     }
 }
 
-fn find_id(attributes: &Vec<OwnedAttribute>) -> Option<String> {
+fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
     attributes
         .iter()
         .find(|attr| attr.name.local_name == "id")

@@ -6,7 +6,7 @@ use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
 
 // TODO: deduplicate this with shorten_ids
-fn find_id(attributes: &Vec<OwnedAttribute>) -> Option<String> {
+fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
     attributes
         .iter()
         .find(|attr| attr.name.local_name == "id")
@@ -59,32 +59,23 @@ fn find_id_usages_in_css(style_child: &Node, id_map: &mut BTreeMap<String, bool>
 }
 
 fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
-    match node {
-        Node::RegularNode {
-            node_type: RegularNodeType::Style,
-            attributes,
-            children,
-        } => {
-            attributes
-                .iter()
-                .for_each(|attribute| find_id_usage_in_attribute(attribute, id_map));
-            children
-                .iter()
-                .for_each(|child| find_id_usages_in_css(child, id_map));
-        }
-        Node::RegularNode {
-            node_type: _,
-            attributes,
-            children,
-        } => {
-            attributes
-                .iter()
-                .for_each(|attribute| find_id_usage_in_attribute(attribute, id_map));
-            children
-                .iter()
-                .for_each(|child| find_id_usages_for_node(child, id_map));
-        }
-        _ => {}
+    if let Node::RegularNode {
+        node_type,
+        attributes,
+        children,
+    } = node
+    {
+        attributes
+            .iter()
+            .for_each(|attribute| find_id_usage_in_attribute(attribute, id_map));
+
+        let find_func = if let RegularNodeType::Style = node_type {
+            find_id_usages_in_css
+        } else {
+            find_id_usages_for_node
+        };
+
+        children.iter().for_each(|child| find_func(child, id_map));
     }
 }
 
@@ -103,11 +94,7 @@ fn is_attribute_useless_id(
     attribute: &OwnedAttribute,
     id_usage_map: &BTreeMap<String, bool>,
 ) -> bool {
-    if attribute.name.local_name == "id" {
-        id_usage_map[&attribute.value] == false
-    } else {
-        false
-    }
+    attribute.name.local_name == "id" && !id_usage_map[&attribute.value]
 }
 
 fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>) -> Node {
@@ -117,7 +104,7 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
             attributes,
             children,
         } => Node::RegularNode {
-            node_type: node_type,
+            node_type,
             attributes: attributes
                 .into_iter()
                 .filter(|attribute| !is_attribute_useless_id(attribute, id_usage_map))
