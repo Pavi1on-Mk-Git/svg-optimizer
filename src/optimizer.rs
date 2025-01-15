@@ -26,6 +26,10 @@ pub struct Optimizer {
     #[arg(short, long, num_args = 1..)]
     output_file_names: Vec<PathBuf>,
 
+    /// Disable all optimizations by default.
+    #[arg(short, long)]
+    disable_by_default: bool,
+
     #[command(flatten)]
     optimizations: Optimizations,
 }
@@ -48,7 +52,7 @@ impl Optimizer {
         let mut parser = Parser::new(file)?;
 
         let nodes = parser.parse_document()?;
-        let optimized = self.optimizations.apply(nodes, true)?;
+        let optimized = self.optimizations.apply(nodes, !self.disable_by_default)?;
 
         let output_path = Self::get_output_path(input_path, output_path_arg);
         let output_file = File::create(output_path)?;

@@ -10,7 +10,7 @@ where
 }
 
 macro_rules! use_optimizations {
-    ($([$optimization_name:ident, $disable_flag_name:ident]),*) => {
+    ($([$optimization_name:ident, $disable_flag_name:ident, $doc:literal,]),*) => {
         $(
             mod $optimization_name;
             pub use $optimization_name::$optimization_name;
@@ -20,9 +20,11 @@ macro_rules! use_optimizations {
         pub struct Optimizations {
             $(
                 #[arg(long)]
+                #[doc = $doc]
                 pub $optimization_name: bool,
 
-                #[arg(long)]
+                #[arg(long, conflicts_with = stringify!($optimization_name))]
+                #[doc = "Disable the optimization."]
                 pub $disable_flag_name: bool,
             )*
         }
@@ -43,11 +45,31 @@ macro_rules! use_optimizations {
 }
 
 use_optimizations!(
-    [ellipses_to_circles, no_ellipses_to_circles],
-    [remove_comments, no_remove_comments],
-    [remove_useless_groups, no_remove_useless_groups],
-    [shorten_ids, no_shorten_ids],
-    [remove_attr_whitespace, no_remove_attr_whitespace]
+    [
+        ellipses_to_circles,
+        no_ellipses_to_circles,
+        "Convert ellipses to circles if their `rx` and `ry` are equal.",
+    ],
+    [
+        remove_comments,
+        no_remove_comments,
+        "Remove all comments.",
+    ],
+    [
+        remove_useless_groups,
+        no_remove_useless_groups,
+        "Remove groups that contain a single node or no nodes.",
+    ],
+    [
+        shorten_ids,
+        no_shorten_ids,
+        "Convert id names to be as short as possible. New names will always be created from latin alphabet letters and digits.",
+    ],
+    [
+        remove_attr_whitespace,
+        no_remove_attr_whitespace,
+        "Remove excess whitespace from attributes.",
+    ]
 );
 
 #[cfg(test)]
