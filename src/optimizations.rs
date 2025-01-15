@@ -84,6 +84,11 @@ use_optimizations!(
         remove_attr_whitespace,
         no_remove_attr_whitespace,
         "Remove excess whitespace from attributes.",
+    ],
+    [
+        remove_whitespace_outside_tags,
+        no_remove_whitespace_outside_tags,
+        "Remove excess whitespace from outside of tags. Leaves whitespace between <text> tags, as it may be rendered.",
     ]
 );
 
