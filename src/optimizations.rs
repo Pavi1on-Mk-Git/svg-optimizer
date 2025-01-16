@@ -123,11 +123,11 @@ use_optimizations!(
         no_remove_useless_groups,
         "Remove groups that contain a single node or no nodes.",
     ],
-    // [
-    //     remove_empty_attributes,
-    //     no_remove_empty_attributes,
-    //     "Remove attributes whose value is an empty string.",
-    // ],
+    [
+        remove_empty_attributes,
+        no_remove_empty_attributes,
+        "Remove attributes whose value is an empty string.",
+    ],
     [
         shorten_ids,
         no_shorten_ids,
