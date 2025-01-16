@@ -1,38 +1,10 @@
+use super::find_ids_for_subtree;
 use super::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
 use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
-
-// TODO: deduplicate this with shorten_ids
-fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
-    attributes
-        .iter()
-        .find(|attr| attr.name.local_name == "id")
-        .map(|id| id.value.clone())
-}
-
-fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
-    let mut ids = vec![];
-
-    for node in nodes {
-        if let Node::RegularNode {
-            attributes,
-            children,
-            ..
-        } = node
-        {
-            if let Some(id) = find_id(attributes) {
-                ids.push(id);
-            }
-
-            ids.extend(find_ids_for_subtree(children));
-        }
-    }
-
-    ids
-}
 
 fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<String, bool>) {
     if attribute.name.local_name == "href" {

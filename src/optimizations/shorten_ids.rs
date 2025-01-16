@@ -1,3 +1,4 @@
+use super::find_ids_for_subtree;
 use super::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
@@ -43,40 +44,7 @@ impl Iterator for IdGenerator {
     }
 }
 
-fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
-    attributes
-        .iter()
-        .find(|attr| attr.name.local_name == "id")
-        .map(|id| id.value.clone())
-}
-
-fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
-    let mut ids = vec![];
-
-    for node in nodes {
-        if let Node::RegularNode {
-            attributes,
-            children,
-            ..
-        } = node
-        {
-            if let Some(id) = find_id(attributes) {
-                ids.push(id);
-            }
-
-            ids.extend(find_ids_for_subtree(children));
-        }
-    }
-
-    ids
-}
-
-fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
-    let ids = find_ids_for_subtree(nodes);
-    BTreeMap::from_iter(ids.into_iter().zip(IdGenerator::new()))
-}
-
-fn replace_id_in_attribute(
+fn shorten_id_in_attribute(
     mut attribute: OwnedAttribute,
     id_map: &BTreeMap<String, String>,
 ) -> OwnedAttribute {
@@ -96,7 +64,7 @@ fn replace_id_in_attribute(
     attribute
 }
 
-fn replace_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> Node {
+fn shorten_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> Node {
     if let Node::ChildlessNode {
         node_type: ChildlessNodeType::Text(mut text),
     } = style_child
@@ -115,25 +83,29 @@ fn replace_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> No
 fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
     match node {
         Node::RegularNode {
-            node_type: RegularNodeType::Style,
-            attributes,
-            children,
-        } => Node::RegularNode {
-            node_type: RegularNodeType::Style,
-            attributes: attributes.map(|attribute| replace_id_in_attribute(attribute, id_map)),
-            children: children.map(|child| replace_id_in_css(child, id_map)),
-        },
-        Node::RegularNode {
             node_type,
             attributes,
             children,
-        } => Node::RegularNode {
-            node_type,
-            attributes: attributes.map(|attribute| replace_id_in_attribute(attribute, id_map)),
-            children: children.map(|child| shorten_ids_for_node(child, id_map)),
-        },
+        } => {
+            let shorten_func = if let RegularNodeType::Style = node_type {
+                shorten_id_in_css
+            } else {
+                shorten_ids_for_node
+            };
+
+            Node::RegularNode {
+                node_type,
+                attributes: attributes.map(|attribute| shorten_id_in_attribute(attribute, id_map)),
+                children: children.map(|child| shorten_func(child, id_map)),
+            }
+        }
         other => other,
     }
+}
+
+fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
+    let ids = find_ids_for_subtree(nodes);
+    BTreeMap::from_iter(ids.into_iter().zip(IdGenerator::new()))
 }
 
 pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
