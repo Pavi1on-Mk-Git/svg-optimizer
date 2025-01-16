@@ -1,4 +1,4 @@
-use super::{apply, apply_option};
+use super::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
@@ -39,14 +39,7 @@ impl Iterator for IdGenerator {
 
         self.generated_ids += 1;
 
-        let res = Some(
-            char_ids
-                .into_iter()
-                .map(|id| self.base_characters[id])
-                .collect(),
-        );
-        println!("generator {:?}", res);
-        res
+        Some(char_ids.map(|id| self.base_characters[id]))
     }
 }
 
@@ -127,10 +120,8 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
             children,
         } => Node::RegularNode {
             node_type: RegularNodeType::Style,
-            attributes: apply(attributes, |attribute| {
-                replace_id_in_attribute(attribute, id_map)
-            }),
-            children: apply(children, |child| replace_id_in_css(child, id_map)),
+            attributes: attributes.map(|attribute| replace_id_in_attribute(attribute, id_map)),
+            children: children.map(|child| replace_id_in_css(child, id_map)),
         },
         Node::RegularNode {
             node_type,
@@ -138,10 +129,8 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
             children,
         } => Node::RegularNode {
             node_type,
-            attributes: apply(attributes, |attribute| {
-                replace_id_in_attribute(attribute, id_map)
-            }),
-            children: apply(children, |child| shorten_ids_for_node(child, id_map)),
+            attributes: attributes.map(|attribute| replace_id_in_attribute(attribute, id_map)),
+            children: children.map(|child| shorten_ids_for_node(child, id_map)),
         },
         other => other,
     }
@@ -149,9 +138,7 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
 
 pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
     let id_map = make_id_map(&nodes);
-    Ok(apply_option(nodes, |node| {
-        Some(shorten_ids_for_node(node, &id_map))
-    }))
+    Ok(nodes.map(|node| shorten_ids_for_node(node, &id_map)))
 }
 
 #[cfg(test)]

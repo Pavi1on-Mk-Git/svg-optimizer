@@ -1,33 +1,30 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::Node;
 use crate::node::Node::RegularNode;
 use anyhow::Result;
 use itertools::Itertools;
 use xml::attribute::OwnedAttribute;
 
-fn remove_attr_whitespace_from_node(node: Node) -> Option<Node> {
-    Some(match node {
+fn remove_attr_whitespace_from_node(node: Node) -> Node {
+    match node {
         RegularNode {
             node_type,
             attributes,
             children,
         } => RegularNode {
             node_type,
-            attributes: attributes
-                .into_iter()
-                .map(|OwnedAttribute { name, value }| OwnedAttribute {
-                    name,
-                    value: value.split_whitespace().join(" "),
-                })
-                .collect(),
-            children: remove_attr_whitespace(children).unwrap(),
+            attributes: attributes.map(|OwnedAttribute { name, value }| OwnedAttribute {
+                name,
+                value: value.split_whitespace().join(" "),
+            }),
+            children: children.map(remove_attr_whitespace_from_node),
         },
         other => other,
-    })
+    }
 }
 
 pub fn remove_attr_whitespace(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(nodes, remove_attr_whitespace_from_node))
+    Ok(nodes.map(remove_attr_whitespace_from_node))
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::Node;
 use crate::node::RegularNodeType;
 use anyhow::Result;
@@ -57,13 +57,10 @@ fn circle_attributes(
 
             let r_val = rx.value.clone();
 
-            let mut attributes: Vec<OwnedAttribute> = attributes
-                .into_iter()
-                .filter(|attr| {
-                    let name = &attr.name.local_name;
-                    name != rx_name && name != ry_name
-                })
-                .collect();
+            let mut attributes: Vec<OwnedAttribute> = attributes.filter(|attr| {
+                let name = &attr.name.local_name;
+                name != rx_name && name != ry_name
+            });
             attributes.push(OwnedAttribute {
                 name: r_name,
                 value: r_val,
@@ -75,7 +72,7 @@ fn circle_attributes(
 }
 
 pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(nodes, ellipses_to_circles_from_node))
+    Ok(nodes.filter_map(ellipses_to_circles_from_node))
 }
 
 #[cfg(test)]

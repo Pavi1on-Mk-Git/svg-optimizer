@@ -1,4 +1,4 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::Node;
 use crate::node::RegularNodeType;
 use anyhow::Result;
@@ -11,19 +11,17 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
             attributes: parent_attr,
             children,
         } => {
-            let mut new_children = remove_useless_groups(children).unwrap();
+            let mut new_children: Vec<Node> = children.filter_map(remove_useless_groups_from_node);
 
-            if new_children.len() > 1 {
-                return Some(Node::RegularNode {
+            match new_children.len() {
+                0 => None,
+                1 => Some(create_new_group(new_children.remove(0), parent_attr)),
+                _ => Some(Node::RegularNode {
                     node_type: RegularNodeType::Group,
                     attributes: parent_attr,
                     children: new_children,
-                });
+                }),
             }
-
-            new_children
-                .pop()
-                .map(|node| merge_with_group(node, parent_attr, new_children))
         }
         Node::RegularNode {
             node_type,
@@ -32,34 +30,29 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
         } => Some(Node::RegularNode {
             node_type,
             attributes,
-            children: remove_useless_groups(children).unwrap(),
+            children: children.filter_map(remove_useless_groups_from_node),
         }),
         other => Some(other),
     }
 }
 
-fn merge_with_group(
-    node: Node,
-    parent_attr: Vec<OwnedAttribute>,
-    mut new_children: Vec<Node>,
-) -> Node {
+fn create_new_group(only_child: Node, group_attributes: Vec<OwnedAttribute>) -> Node {
     if let Node::RegularNode {
         node_type,
-        attributes: child_attr,
+        attributes,
         children,
-    } = node
+    } = only_child
     {
         Node::RegularNode {
             node_type,
-            attributes: merge_attributes(parent_attr, child_attr),
+            attributes: merge_attributes(group_attributes, attributes),
             children,
         }
     } else {
-        new_children.push(node);
         Node::RegularNode {
             node_type: RegularNodeType::Group,
-            attributes: parent_attr,
-            children: new_children,
+            attributes: group_attributes,
+            children: vec![only_child],
         }
     }
 }
@@ -74,7 +67,7 @@ fn merge_attributes(
 }
 
 pub fn remove_useless_groups(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(nodes, remove_useless_groups_from_node))
+    Ok(nodes.filter_map(remove_useless_groups_from_node))
 }
 
 #[cfg(test)]
@@ -90,7 +83,7 @@ mod tests {
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
         <g fill="white" stroke="green" stroke-width="5"><circle cx="40" cy="40" r="25"/></g>
-        <g><g/></g></svg>
+        <g><g/><g/></g></svg>
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
@@ -108,6 +101,9 @@ mod tests {
         <circle cx="40" cy="40" r="25"/>
         <circle cx="80" cy="80" r="25"/>
         </g>
+        <g fill="white" stroke="green" stroke-width="5">
+        some text
+        </g>
         </svg>
         "#,
         r#"
@@ -115,6 +111,9 @@ mod tests {
         <g fill="white" stroke="green" stroke-width="5">
         <circle cx="40" cy="40" r="25"/>
         <circle cx="80" cy="80" r="25"/>
+        </g>
+        <g fill="white" stroke="green" stroke-width="5">
+        some text
         </g>
         </svg>
         "#

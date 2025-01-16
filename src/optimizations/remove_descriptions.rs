@@ -1,4 +1,4 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 
@@ -16,14 +16,14 @@ fn remove_descriptions_from_node(node: Node) -> Option<Node> {
         } => Some(Node::RegularNode {
             node_type,
             attributes,
-            children: apply_option(children, remove_descriptions_from_node),
+            children: children.filter_map(remove_descriptions_from_node),
         }),
         other => Some(other),
     }
 }
 
 pub fn remove_descriptions(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(nodes, remove_descriptions_from_node))
+    Ok(nodes.filter_map(remove_descriptions_from_node))
 }
 
 #[cfg(test)]

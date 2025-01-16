@@ -1,4 +1,4 @@
-use super::apply;
+use super::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
@@ -106,12 +106,8 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
         } => Node::RegularNode {
             node_type,
             attributes: attributes
-                .into_iter()
-                .filter(|attribute| !is_attribute_useless_id(attribute, id_usage_map))
-                .collect(),
-            children: apply(children, |child| {
-                remove_useless_ids_for_node(child, id_usage_map)
-            }),
+                .filter(|attribute| !is_attribute_useless_id(attribute, id_usage_map)),
+            children: children.map(|child| remove_useless_ids_for_node(child, id_usage_map)),
         },
         other => other,
     }
@@ -119,9 +115,7 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
 
 pub fn remove_useless_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
     let id_usage_map = make_id_usage_map(&nodes);
-    Ok(apply(nodes, |node| {
-        remove_useless_ids_for_node(node, &id_usage_map)
-    }))
+    Ok(nodes.map(|node| remove_useless_ids_for_node(node, &id_usage_map)))
 }
 
 #[cfg(test)]

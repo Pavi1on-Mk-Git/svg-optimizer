@@ -1,31 +1,56 @@
 use crate::node::Node;
 use anyhow::Result;
-use itertools::Itertools;
+// use itertools::Itertools;
 
-pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
-where
-    F: Fn(T) -> Result<Option<T>>,
-{
-    nodes
-        .into_iter()
-        .map(func)
-        .process_results(|iter| iter.flatten().collect())
+// pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
+// where
+//     F: Fn(T) -> Result<Option<T>>,
+// {
+//     nodes
+//         .into_iter()
+//         .map(func)
+//         .process_results(|iter| iter.flatten().collect())
+// }
+
+trait EasyIter<T> {
+    fn filter<F>(self, func: F) -> Vec<T>
+    where
+        F: Fn(&T) -> bool;
+
+    fn map<F, T2, B>(self, func: F) -> B
+    where
+        F: Fn(T) -> T2,
+        B: FromIterator<T2>;
+
+    fn filter_map<F, T2, B>(self, func: F) -> B
+    where
+        F: Fn(T) -> Option<T2>,
+        B: FromIterator<T2>;
 }
 
-pub fn apply_option<I, T, F>(nodes: I, func: F) -> Vec<T>
-where
-    I: IntoIterator<Item = T>,
-    F: Fn(T) -> Option<T>,
-{
-    nodes.into_iter().filter_map(func).collect()
-}
+impl<I: IntoIterator<Item = T>, T> EasyIter<T> for I {
+    fn filter<F>(self, func: F) -> Vec<T>
+    where
+        F: Fn(&T) -> bool,
+    {
+        std::iter::Iterator::filter(self.into_iter(), func).collect()
+    }
 
-pub fn apply<I, T, F>(nodes: I, func: F) -> Vec<T>
-where
-    I: IntoIterator<Item = T>,
-    F: Fn(T) -> T,
-{
-    nodes.into_iter().map(func).collect()
+    fn filter_map<F, T2, B>(self, func: F) -> B
+    where
+        F: Fn(T) -> Option<T2>,
+        B: FromIterator<T2>,
+    {
+        std::iter::Iterator::filter_map(self.into_iter(), func).collect()
+    }
+
+    fn map<F, T2, B>(self, func: F) -> B
+    where
+        F: Fn(T) -> T2,
+        B: FromIterator<T2>,
+    {
+        std::iter::Iterator::map(self.into_iter(), func).collect()
+    }
 }
 
 macro_rules! use_optimizations {
@@ -64,6 +89,16 @@ macro_rules! use_optimizations {
 
 use_optimizations!(
     [
+        remove_attr_whitespace,
+        no_remove_attr_whitespace,
+        "Remove excess whitespace from attributes.",
+    ],
+    [
+        remove_whitespace_outside_tags,
+        no_remove_whitespace_outside_tags,
+        "Remove excess whitespace from outside of tags. Leaves whitespace between <text> tags, as it may be rendered.",
+    ],
+    [
         ellipses_to_circles,
         no_ellipses_to_circles,
         "Convert ellipses to circles if their `rx` and `ry` are equal.",
@@ -88,6 +123,11 @@ use_optimizations!(
         no_remove_useless_groups,
         "Remove groups that contain a single node or no nodes.",
     ],
+    // [
+    //     remove_empty_attributes,
+    //     no_remove_empty_attributes,
+    //     "Remove attributes whose value is an empty string.",
+    // ],
     [
         shorten_ids,
         no_shorten_ids,
@@ -97,16 +137,6 @@ use_optimizations!(
         remove_useless_ids,
         no_remove_useless_ids,
         "Removed unused ids.",
-    ],
-    [
-        remove_attr_whitespace,
-        no_remove_attr_whitespace,
-        "Remove excess whitespace from attributes.",
-    ],
-    [
-        remove_whitespace_outside_tags,
-        no_remove_whitespace_outside_tags,
-        "Remove excess whitespace from outside of tags. Leaves whitespace between <text> tags, as it may be rendered.",
     ]
 );
 

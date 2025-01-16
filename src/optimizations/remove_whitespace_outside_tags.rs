@@ -1,4 +1,4 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::Node::RegularNode;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
@@ -16,7 +16,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
         } => Some(RegularNode {
             node_type,
             attributes,
-            children: remove_whitespace_outside_tags(children).unwrap(),
+            children: children.filter_map(remove_whitespace_outside_tags_from_node),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(text),
@@ -34,10 +34,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(
-        nodes,
-        remove_whitespace_outside_tags_from_node,
-    ))
+    Ok(nodes.filter_map(remove_whitespace_outside_tags_from_node))
 }
 
 #[cfg(test)]

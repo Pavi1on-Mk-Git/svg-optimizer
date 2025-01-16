@@ -1,4 +1,4 @@
-use super::apply_option;
+use super::EasyIter;
 use crate::node::ChildlessNodeType;
 use crate::node::Node;
 use anyhow::Result;
@@ -12,7 +12,7 @@ fn remove_doctype_from_node(node: Node) -> Option<Node> {
         } => Some(Node::RegularNode {
             node_type,
             attributes,
-            children: remove_doctype(children).unwrap(),
+            children: children.filter_map(remove_doctype_from_node),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::ProcessingInstruction(_, _),
@@ -22,7 +22,7 @@ fn remove_doctype_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_doctype(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(apply_option(nodes, remove_doctype_from_node))
+    Ok(nodes.filter_map(remove_doctype_from_node))
 }
 
 #[cfg(test)]
