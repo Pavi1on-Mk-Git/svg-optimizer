@@ -92,6 +92,11 @@ use_optimizations!(
         remove_useless_ids,
         no_remove_useless_ids,
         "Removed unused ids.",
+    ],
+    [
+        sort_attributes,
+        no_sort_attributes,
+        "Sorts attributes by name.",
     ]
 );
 
