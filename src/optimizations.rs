@@ -112,6 +112,11 @@ use_optimizations!(
         convert_to_viewbox,
         no_convert_to_viewbox,
         "Convert width and height to viewbox. Conversion may result in floating point numbers and thus create a larger file",
+    ],
+    [
+        remove_empty_containers,
+        no_remove_empty_containerss,
+        "Remove empty container elements",
     ]
 );
 
