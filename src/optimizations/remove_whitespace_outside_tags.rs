@@ -1,4 +1,4 @@
-use super::EasyIter;
+use super::common::iter::EasyIter;
 use crate::node::Node::RegularNode;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
@@ -20,15 +20,9 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(text),
-        } => {
-            if text.trim().is_empty() {
-                None
-            } else {
-                Some(Node::ChildlessNode {
-                    node_type: ChildlessNodeType::Text(text),
-                })
-            }
-        }
+        } => (!text.trim().is_empty()).then_some(Node::ChildlessNode {
+            node_type: ChildlessNodeType::Text(text),
+        }),
         other => Some(other),
     }
 }
@@ -40,7 +34,7 @@ pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

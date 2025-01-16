@@ -1,4 +1,4 @@
-use super::EasyIter;
+use super::common::iter::EasyIter;
 use crate::node::Node;
 use anyhow::Result;
 use itertools::Itertools;
@@ -29,7 +29,7 @@ pub fn remove_attribute_whitespace(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

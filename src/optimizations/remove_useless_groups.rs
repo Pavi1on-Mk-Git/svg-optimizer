@@ -1,4 +1,4 @@
-use super::EasyIter;
+use super::common::iter::EasyIter;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
@@ -72,7 +72,7 @@ pub fn remove_useless_groups(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

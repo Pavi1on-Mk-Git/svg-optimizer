@@ -1,4 +1,4 @@
-use super::EasyIter;
+use super::common::iter::EasyIter;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
@@ -38,6 +38,8 @@ fn get_radii(attributes: &[OwnedAttribute]) -> (Option<&OwnedAttribute>, Option<
     (rx, ry)
 }
 
+const R_NAME: &str = "r";
+
 fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Node {
     let (rx, ry) = get_radii(&attributes);
 
@@ -45,7 +47,7 @@ fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Nod
         (Some(rx), Some(ry)) if rx.value == ry.value => {
             let radius_attribute = OwnedAttribute {
                 name: OwnedName {
-                    local_name: "r".into(),
+                    local_name: R_NAME.into(),
                     namespace: rx.name.namespace.clone(),
                     prefix: rx.name.prefix.clone(),
                 },
@@ -77,7 +79,7 @@ pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

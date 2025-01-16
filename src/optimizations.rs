@@ -1,88 +1,7 @@
 use crate::node::Node;
 use anyhow::Result;
-use xml::attribute::OwnedAttribute;
 
-// use itertools::Itertools;
-
-// TODO: potentially remove if not needed
-// pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
-// where
-//     F: Fn(T) -> Result<Option<T>>,
-// {
-//     nodes
-//         .into_iter()
-//         .map(func)
-//         .process_results(|iter| iter.flatten().collect())
-// }
-
-trait EasyIter<T> {
-    fn filter<F>(self, func: F) -> Vec<T>
-    where
-        F: Fn(&T) -> bool;
-
-    fn map<F, T2, B>(self, func: F) -> B
-    where
-        F: Fn(T) -> T2,
-        B: FromIterator<T2>;
-
-    fn filter_map<F, T2, B>(self, func: F) -> B
-    where
-        F: Fn(T) -> Option<T2>,
-        B: FromIterator<T2>;
-}
-
-impl<I: IntoIterator<Item = T>, T> EasyIter<T> for I {
-    fn filter<F>(self, func: F) -> Vec<T>
-    where
-        F: Fn(&T) -> bool,
-    {
-        std::iter::Iterator::filter(self.into_iter(), func).collect()
-    }
-
-    fn filter_map<F, T2, B>(self, func: F) -> B
-    where
-        F: Fn(T) -> Option<T2>,
-        B: FromIterator<T2>,
-    {
-        std::iter::Iterator::filter_map(self.into_iter(), func).collect()
-    }
-
-    fn map<F, T2, B>(self, func: F) -> B
-    where
-        F: Fn(T) -> T2,
-        B: FromIterator<T2>,
-    {
-        std::iter::Iterator::map(self.into_iter(), func).collect()
-    }
-}
-
-fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
-    attributes
-        .iter()
-        .find(|attr| attr.name.local_name == "id")
-        .map(|id| id.value.clone())
-}
-
-pub fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
-    let mut ids = vec![];
-
-    for node in nodes {
-        if let Node::RegularNode {
-            attributes,
-            children,
-            ..
-        } = node
-        {
-            if let Some(id) = find_id(attributes) {
-                ids.push(id);
-            }
-
-            ids.extend(find_ids_for_subtree(children));
-        }
-    }
-
-    ids
-}
+pub mod common;
 
 macro_rules! use_optimizations {
     ($([$optimization_name:ident, $disable_flag_name:ident, $doc:literal,]),*) => {
@@ -178,31 +97,11 @@ use_optimizations!(
 
 #[cfg(test)]
 pub mod test {
-    use super::*;
+    use super::common::test::test_optimize;
+    use crate::node::Node;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
-
-    macro_rules! test_optimize {
-        ($test_name:ident, $tested_fn:ident, $test_str:literal, $expected:literal) => {
-            #[test]
-            fn $test_name() -> anyhow::Result<()> {
-                let mut parser = Parser::new($test_str.as_bytes())?;
-                let nodes = parser.parse_document()?;
-
-                let nodes = $tested_fn(nodes)?;
-
-                let buffer = Vec::new();
-                let mut writer = SVGWriter::new(buffer);
-                writer.write(nodes)?;
-
-                let actual = String::from_utf8(writer.into_inner()).unwrap();
-
-                assert_eq!(actual, $expected.trim_end());
-
-                Ok(())
-            }
-        };
-    }
+    use anyhow::Result;
 
     fn identity(nodes: Vec<Node>) -> Result<Vec<Node>> {
         Ok(nodes)
@@ -222,6 +121,4 @@ pub mod test {
         <g><g/></g></svg>
         "#
     );
-
-    pub(crate) use test_optimize;
 }

@@ -1,5 +1,6 @@
-use super::find_ids_for_subtree;
-use super::EasyIter;
+use super::common::constants::*;
+use super::common::helpers::find_ids_for_subtree;
+use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
@@ -7,7 +8,7 @@ use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
 
 fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<String, bool>) {
-    if attribute.name.local_name == "href" {
+    if attribute.name.local_name == HREF_NAME {
         let (first, rest) = attribute.value.split_at(1);
         if first == "#" {
             if let Some(value_in_map) = id_map.get_mut(rest) {
@@ -23,7 +24,7 @@ fn find_id_usages_in_css(style_child: &Node, id_map: &mut BTreeMap<String, bool>
     } = style_child
     {
         for (id, value_in_map) in id_map.iter_mut() {
-            if text.contains(&format!("#{}", id)) {
+            if text.contains(&format!("#{id}")) {
                 *value_in_map = true;
             }
         }
@@ -66,7 +67,7 @@ fn is_attribute_useless_id(
     attribute: &OwnedAttribute,
     id_usage_map: &BTreeMap<String, bool>,
 ) -> bool {
-    attribute.name.local_name == "id" && !id_usage_map[&attribute.value]
+    attribute.name.local_name == ID_NAME && !id_usage_map[&attribute.value]
 }
 
 fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>) -> Node {
@@ -93,7 +94,7 @@ pub fn remove_useless_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

@@ -1,13 +1,15 @@
-use super::EasyIter;
+use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 
 fn contains_only_whitespace(node: &Node) -> bool {
-    match node {
-        Node::ChildlessNode {
-            node_type: ChildlessNodeType::Text(text),
-        } => text.trim().is_empty(),
-        _ => false,
+    if let Node::ChildlessNode {
+        node_type: ChildlessNodeType::Text(text),
+    } = node
+    {
+        text.trim().is_empty()
+    } else {
+        false
     }
 }
 
@@ -26,15 +28,11 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
                 })
                 .collect();
 
-            if !non_whitespace_children.is_empty() {
-                Some(Node::RegularNode {
-                    node_type,
-                    attributes,
-                    children: new_children,
-                })
-            } else {
-                None
-            }
+            (!non_whitespace_children.is_empty()).then_some(Node::RegularNode {
+                node_type,
+                attributes,
+                children: new_children,
+            })
         }
         Node::RegularNode {
             node_type,
@@ -56,7 +54,7 @@ pub fn remove_empty_texts(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 

@@ -1,5 +1,6 @@
-use super::find_ids_for_subtree;
-use super::EasyIter;
+use super::common::constants::*;
+use super::common::helpers::find_ids_for_subtree;
+use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
 use std::collections::BTreeMap;
@@ -48,11 +49,11 @@ fn shorten_id_in_attribute(
     mut attribute: OwnedAttribute,
     id_map: &BTreeMap<String, String>,
 ) -> OwnedAttribute {
-    if attribute.name.local_name == "id" {
+    if attribute.name.local_name == ID_NAME {
         attribute.value = id_map[&attribute.value].clone();
     }
 
-    if attribute.name.local_name == "href" {
+    if attribute.name.local_name == HREF_NAME {
         let (first, rest) = attribute.value.split_at(1);
         if first == "#" {
             if let Some(new_id) = id_map.get(rest) {
@@ -60,7 +61,6 @@ fn shorten_id_in_attribute(
             }
         }
     }
-
     attribute
 }
 
@@ -116,7 +116,7 @@ pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::optimizations::test::test_optimize;
+    use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 
