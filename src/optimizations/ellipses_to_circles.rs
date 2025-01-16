@@ -96,7 +96,7 @@ mod tests {
         </svg>
         "#,
         r#"
-        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
         <circle cx="100" cy="50" r="50"/>
         <circle cx="100" cy="50" r="50"> Text in here </circle>
         <ellipse cx="100" cy="50" rx="60" ry="50"/>

@@ -105,7 +105,7 @@ impl<R: Read> Parser<R> {
     ) -> Node {
         if let Some(XmlEvent::EndElement { name }) = self.curr_event.take() {
             let node_type = if name.local_name == "svg" {
-                RegularNodeType::Svg(namespace.get("").map(|s| s.into()))
+                RegularNodeType::Svg(namespace)
             } else {
                 name.into()
             };
@@ -156,10 +156,11 @@ mod tests {
                 attributes,
                 children,
             } => {
-                assert_eq!(
-                    node_type,
-                    RegularNodeType::Svg(Some("http://www.w3.org/2000/svg".into()))
-                );
+                let mut namespace = Namespace::empty();
+                namespace.put("", "http://www.w3.org/2000/svg");
+                namespace.put("xml", "http://www.w3.org/XML/1998/namespace");
+                namespace.put("xmlns", "http://www.w3.org/2000/xmlns/");
+                assert_eq!(node_type, RegularNodeType::Svg(namespace));
                 assert_eq!(attributes.len(), 2);
                 assert_eq!(children.len(), 3); // 2 whitespace children
             }

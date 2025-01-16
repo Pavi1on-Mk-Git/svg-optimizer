@@ -17,23 +17,19 @@ pub enum Node {
 }
 
 impl RegularNodeType {
-    fn tags(self, mut attributes: Vec<OwnedAttribute>) -> (XmlEvent, XmlEvent) {
-        if let RegularNodeType::Svg(Some(text)) = &self {
-            attributes.push(OwnedAttribute::new(
-                OwnedName {
-                    local_name: "xmlns".into(),
-                    namespace: None,
-                    prefix: None,
-                },
-                text,
-            ))
-        }
+    fn tags(self, attributes: Vec<OwnedAttribute>) -> (XmlEvent, XmlEvent) {
+        let namespace = if let RegularNodeType::Svg(namespace) = &self {
+            namespace.clone()
+        } else {
+            Namespace::empty()
+        };
+
         let name: OwnedName = self.into();
         (
             XmlEvent::StartElement {
                 name: name.clone(),
                 attributes,
-                namespace: Namespace::empty(),
+                namespace,
             },
             XmlEvent::EndElement { name },
         )
@@ -45,7 +41,7 @@ macro_rules! conversions {
 
         #[derive(Debug, PartialEq, Eq)]
         pub enum RegularNodeType {
-            Svg(Option<String>),
+            Svg(Namespace),
             Unknown(String),
             $($node_type,)*
         }
