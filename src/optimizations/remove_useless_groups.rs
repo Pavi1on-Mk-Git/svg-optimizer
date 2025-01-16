@@ -1,6 +1,5 @@
 use super::EasyIter;
-use crate::node::Node;
-use crate::node::RegularNodeType;
+use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 

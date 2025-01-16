@@ -1,6 +1,5 @@
 use super::EasyIter;
-use crate::node::ChildlessNodeType;
-use crate::node::Node;
+use crate::node::{ChildlessNodeType, Node};
 use anyhow::Result;
 
 fn remove_comments_from_node(node: Node) -> Option<Node> {

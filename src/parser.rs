@@ -1,14 +1,13 @@
 use crate::node::ChildlessNodeType::*;
-use crate::node::Node;
-use crate::node::Node::*;
-use crate::node::RegularNodeType;
+use crate::node::{Node, Node::*, RegularNodeType};
 use anyhow::Result;
 use std::io::Read;
-use xml::attribute::OwnedAttribute;
-use xml::namespace::Namespace;
-use xml::reader::ParserConfig2;
-use xml::reader::XmlEvent;
-use xml::EventReader;
+use xml::{
+    attribute::OwnedAttribute,
+    namespace::Namespace,
+    reader::{ParserConfig2, XmlEvent},
+    EventReader,
+};
 
 /// Parses input stream of events provided by svg library into the output tree format of the svg library.
 /// Currently only supports tag &lt;svg&gt;.

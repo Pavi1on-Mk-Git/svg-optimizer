@@ -1,7 +1,5 @@
 use std::io::Write;
-use xml::writer::Error;
-use xml::EmitterConfig;
-use xml::EventWriter;
+use xml::{writer::Error, EmitterConfig, EventWriter};
 
 use crate::node::Node;
 

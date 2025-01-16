@@ -1,13 +1,11 @@
 use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
-use anyhow::Error;
-use anyhow::Result;
+use anyhow::{Error, Result};
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Program that optimizes the size of SVG files.
 ///

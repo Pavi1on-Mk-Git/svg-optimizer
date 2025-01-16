@@ -90,8 +90,8 @@ macro_rules! use_optimizations {
 
 use_optimizations!(
     [
-        remove_attr_whitespace,
-        no_remove_attr_whitespace,
+        remove_attribute_whitespace,
+        no_remove_attribute_whitespace,
         "Remove excess whitespace from attributes.",
     ],
     [
