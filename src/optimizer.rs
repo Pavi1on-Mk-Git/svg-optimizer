@@ -33,13 +33,21 @@ pub struct Optimizer {
 }
 
 impl Optimizer {
-    fn get_output_path(input_path: &Path, output_path_arg: Option<&Path>) -> PathBuf {
+    fn get_output_path(input_path: &Path, output_path_arg: Option<&Path>) -> Result<PathBuf> {
         match output_path_arg {
-            Some(path) => path.to_path_buf(),
+            Some(path) => Ok(path.to_path_buf()),
             None => {
                 let mut output_file_name = OsString::from("opt_");
-                output_file_name.push(input_path.file_name().unwrap()); // TODO: handle error
-                input_path.with_file_name(output_file_name)
+
+                if let Some(file_name) = input_path.file_name() {
+                    output_file_name.push(file_name);
+                    Ok(input_path.with_file_name(output_file_name))
+                } else {
+                    Err(Error::msg(format!(
+                        "Invalid input path given: {}",
+                        input_path.as_os_str().to_str().unwrap_or("invalid unicode")
+                    )))
+                }
             }
         }
     }
@@ -52,7 +60,7 @@ impl Optimizer {
         let nodes = parser.parse_document()?;
         let optimized = self.optimizations.apply(nodes, !self.disable_by_default)?;
 
-        let output_path = Self::get_output_path(input_path, output_path_arg);
+        let output_path = Self::get_output_path(input_path, output_path_arg)?;
         let output_file = File::create(output_path)?;
         SVGWriter::new(output_file).write(optimized)?;
 
@@ -102,7 +110,7 @@ mod tests {
         let optimizer = Optimizer::try_parse_from(vec![
             "main.exe",
             "abc.svg",
-            "--no-remove-attr-whitespace",
+            "--no-remove-attribute-whitespace",
             "somedir/xd.svg",
             "--no-remove-useless-groups",
             "abcd.svg",
@@ -114,7 +122,7 @@ mod tests {
         );
         assert!(optimizer.output_file_names.is_empty());
         assert!(!optimizer.optimizations.no_remove_comments);
-        assert!(optimizer.optimizations.no_remove_attr_whitespace);
+        assert!(optimizer.optimizations.no_remove_attribute_whitespace);
         assert!(optimizer.optimizations.no_remove_useless_groups);
 
         Ok(())
@@ -146,7 +154,7 @@ mod tests {
             vec!["abc2.svg", "somedir_321/xd.svg", "abcd.svg"],
         );
         assert!(optimizer.optimizations.no_remove_comments);
-        assert!(!optimizer.optimizations.no_remove_attr_whitespace);
+        assert!(!optimizer.optimizations.no_remove_attribute_whitespace);
         assert!(!optimizer.optimizations.no_remove_useless_groups);
 
         Ok(())
