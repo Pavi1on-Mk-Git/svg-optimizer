@@ -107,6 +107,11 @@ use_optimizations!(
         remove_unused_defs,
         no_remove_unused_defs,
         "Remove defined objects which are not used anywhere",
+    ],
+    [
+        convert_to_viewbox,
+        no_convert_to_viewbox,
+        "Convert width and height to viewbox. Conversion may result in floating point numbers and thus create a larger file",
     ]
 );
 

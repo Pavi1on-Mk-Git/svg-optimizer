@@ -57,7 +57,7 @@ fn shorten_id_in_attribute(
         let (first, rest) = attribute.value.split_at(1);
         if first == "#" {
             if let Some(new_id) = id_map.get(rest) {
-                attribute.value = format!("#{}", new_id);
+                attribute.value = format!("#{new_id}");
             }
         }
     }
@@ -66,7 +66,7 @@ fn shorten_id_in_attribute(
 
 fn shorten_id_in_text(mut text: String, id_map: &BTreeMap<String, String>) -> String {
     for (old_id, new_id) in id_map {
-        text = text.replace(&format!("#{}", old_id), &format!("#{}", new_id));
+        text = text.replace(&format!("#{old_id}"), &format!("#{new_id}"));
     }
     text
 }

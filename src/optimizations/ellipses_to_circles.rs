@@ -28,14 +28,13 @@ const RX_NAME: &str = "rx";
 const RY_NAME: &str = "ry";
 
 fn get_radii(attributes: &[OwnedAttribute]) -> (Option<&OwnedAttribute>, Option<&OwnedAttribute>) {
-    let rx = attributes
-        .iter()
-        .find(|attribute| attribute.name.local_name == RX_NAME);
-    let ry = attributes
-        .iter()
-        .find(|attribute| attribute.name.local_name == RY_NAME);
+    let find_attr = |name: &str| {
+        attributes
+            .iter()
+            .find(|attribute| attribute.name.local_name == name)
+    };
 
-    (rx, ry)
+    (find_attr(RX_NAME), find_attr(RY_NAME))
 }
 
 const R_NAME: &str = "r";
@@ -48,8 +47,8 @@ fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Nod
             let radius_attribute = OwnedAttribute {
                 name: OwnedName {
                     local_name: R_NAME.into(),
-                    namespace: rx.name.namespace.clone(),
-                    prefix: rx.name.prefix.clone(),
+                    namespace: None,
+                    prefix: None,
                 },
                 value: rx.value.clone(),
             };
