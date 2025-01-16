@@ -4,7 +4,7 @@ use anyhow::Result;
 
 fn contains_only_whitespace(node: &Node) -> bool {
     if let Node::ChildlessNode {
-        node_type: ChildlessNodeType::Text(text),
+        node_type: ChildlessNodeType::Text(text, ..),
     } = node
     {
         text.trim().is_empty()

@@ -156,7 +156,7 @@ conversions!(
 pub enum ChildlessNodeType {
     ProcessingInstruction(String, Option<String>),
     Comment(String),
-    Text(String),
+    Text(String, bool),
 }
 
 impl ChildlessNodeType {
@@ -166,7 +166,13 @@ impl ChildlessNodeType {
                 XmlEvent::ProcessingInstruction { name, data }
             }
             Self::Comment(text) => XmlEvent::Comment(text),
-            Self::Text(text) => XmlEvent::Characters(text),
+            Self::Text(text, is_cdata) => {
+                if is_cdata {
+                    XmlEvent::CData(text)
+                } else {
+                    XmlEvent::Characters(text)
+                }
+            }
         }
     }
 }

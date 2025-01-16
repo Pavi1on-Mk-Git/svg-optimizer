@@ -64,19 +64,21 @@ fn shorten_id_in_attribute(
     attribute
 }
 
+fn shorten_id_in_text(mut text: String, id_map: &BTreeMap<String, String>) -> String {
+    for (old_id, new_id) in id_map {
+        text = text.replace(&format!("#{}", old_id), &format!("#{}", new_id));
+    }
+    text
+}
+
 fn shorten_id_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> Node {
-    if let Node::ChildlessNode {
-        node_type: ChildlessNodeType::Text(mut text),
-    } = style_child
-    {
-        for (old_id, new_id) in id_map {
-            text = text.replace(&format!("#{}", old_id), &format!("#{}", new_id));
-        }
+    match style_child {
         Node::ChildlessNode {
-            node_type: ChildlessNodeType::Text(text),
-        }
-    } else {
-        style_child
+            node_type: ChildlessNodeType::Text(text, is_cdata),
+        } => Node::ChildlessNode {
+            node_type: ChildlessNodeType::Text(shorten_id_in_text(text, id_map), is_cdata),
+        },
+        other => other,
     }
 }
 
@@ -191,6 +193,51 @@ mod tests {
                 stroke: #000066;
                 fill: #00cc00;
             }
+        </style>
+
+        <use href="#a" x="10" fill="blue"/>
+        <use href="#unused" x="10" fill="blue"/>
+        <rect id="a" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "##
+    );
+
+    test_optimize!(
+        test_shorten_id_references_cdata,
+        shorten_ids,
+        r##"
+        <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            <![CDATA[
+            #smallRect {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            #unused {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            ]]>
+        </style>
+
+        <use href="#smallRect" x="10" fill="blue" />
+        <use href="#unused" x="10" fill="blue" />
+        <rect id="smallRect" x="10" y="10" width="100" height="100" />
+        </svg>
+        "##,
+        r##"
+        <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            <![CDATA[
+            #a {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            #unused {
+                stroke: #000066;
+                fill: #00cc00;
+            }
+            ]]>
         </style>
 
         <use href="#a" x="10" fill="blue"/>

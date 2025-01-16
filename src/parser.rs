@@ -21,7 +21,6 @@ impl<R: Read> Parser<R> {
         let mut parser = Parser {
             source: ParserConfig2::new()
                 .ignore_comments(false)
-                .cdata_to_characters(true)
                 .whitespace_to_characters(true)
                 .ignore_root_level_whitespace(false)
                 .create_reader(source),
@@ -62,11 +61,14 @@ impl<R: Read> Parser<R> {
             Some(XmlEvent::ProcessingInstruction { name, data }) => Some(ChildlessNode {
                 node_type: ProcessingInstruction(name, data),
             }),
+            Some(XmlEvent::CData(text)) => Some(ChildlessNode {
+                node_type: Text(text, true),
+            }),
             Some(XmlEvent::Comment(text)) => Some(ChildlessNode {
                 node_type: Comment(text),
             }),
             Some(XmlEvent::Characters(text)) => Some(ChildlessNode {
-                node_type: Text(text),
+                node_type: Text(text, false),
             }),
             Some(XmlEvent::StartElement {
                 attributes,

@@ -20,7 +20,7 @@ fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<
 
 fn find_id_usages_in_css(style_child: &Node, id_map: &mut BTreeMap<String, bool>) {
     if let Node::ChildlessNode {
-        node_type: ChildlessNodeType::Text(text),
+        node_type: ChildlessNodeType::Text(text, ..),
     } = style_child
     {
         for (id, value_in_map) in id_map.iter_mut() {

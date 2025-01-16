@@ -4,8 +4,8 @@ use xml::common::TextPosition;
 
 #[derive(Debug)]
 pub struct ErrorWithPosition {
-    pub message: String,
-    pub position: TextPosition,
+    message: String,
+    position: TextPosition,
 }
 
 impl error::Error for ErrorWithPosition {}
