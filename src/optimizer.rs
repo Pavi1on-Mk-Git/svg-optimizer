@@ -40,7 +40,7 @@ impl Optimizer {
             Some(path) => path.to_path_buf(),
             None => {
                 let mut output_file_name = OsString::from("opt_");
-                output_file_name.push(input_path.file_name().unwrap());
+                output_file_name.push(input_path.file_name().unwrap()); // TODO: handle error
                 input_path.with_file_name(output_file_name)
             }
         }

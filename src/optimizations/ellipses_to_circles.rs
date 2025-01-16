@@ -4,15 +4,13 @@ use crate::node::RegularNodeType;
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
-fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
-    Some(match node {
+fn ellipses_to_circles_from_node(node: Node) -> Node {
+    match node {
         Node::RegularNode {
             node_type: RegularNodeType::Ellipse,
             attributes,
             children,
         } => {
-            let children = ellipses_to_circles(children).unwrap();
-
             let (node_type, attributes) = match circle_attributes(attributes) {
                 Ok(attributes) => (RegularNodeType::Circle, attributes),
                 Err(attributes) => (RegularNodeType::Ellipse, attributes),
@@ -21,7 +19,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
             Node::RegularNode {
                 node_type,
                 attributes,
-                children,
+                children: children.map(ellipses_to_circles_from_node),
             }
         }
         Node::RegularNode {
@@ -31,10 +29,10 @@ fn ellipses_to_circles_from_node(node: Node) -> Option<Node> {
         } => Node::RegularNode {
             node_type,
             attributes,
-            children: ellipses_to_circles(children).unwrap(),
+            children: children.map(ellipses_to_circles_from_node),
         },
         childless_node => childless_node,
-    })
+    }
 }
 
 fn circle_attributes(
@@ -72,7 +70,7 @@ fn circle_attributes(
 }
 
 pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(ellipses_to_circles_from_node))
+    Ok(nodes.map(ellipses_to_circles_from_node))
 }
 
 #[cfg(test)]
