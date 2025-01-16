@@ -97,6 +97,11 @@ use_optimizations!(
         sort_attributes,
         no_sort_attributes,
         "Sorts attributes by name.",
+    ],
+    [
+        extract_common_attributes,
+        no_extract_common_attributes,
+        "Extract common attributes in a group into the group",
     ]
 );
 

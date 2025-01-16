@@ -9,7 +9,7 @@
 - aplikowanie transformacji na ścieżki
 - łączenie ścieżek
 - łączenie styli
-- wyłączanie wspólnych atrybutów elementów grupy do atrybutów grupy
+- ~~wyłączanie wspólnych atrybutów elementów grupy do atrybutów grupy~~
 - ~~usuwanie komentarzy~~
 - ~~usuwanie deklaracji `DOCTYPE`~~
 - ~~usuwanie elementów: `<desc>`, `<metadata>`, `<title>`,~~ `<xml>`
