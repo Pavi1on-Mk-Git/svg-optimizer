@@ -16,7 +16,7 @@
 - usuwanie przestrzeni nazw, elementów i atrybutów edytorów
 - ~~usuwanie pustych atrybutów~~
 - usuwanie pustych kontenerów
-- usuwanie pustych elementów `<text>`, `<tspan>`, `<tref>`
+- ~~usuwanie pustych elementów `<text>`, `<tspan>`, `<tref>` - tref removed from specification~~
 - zamiana atrybutów `width` i `height` na `viewBox`
 - usuwanie niewidocznych elementów
 - usuwanie ścieżek rysowanych poza ekranem

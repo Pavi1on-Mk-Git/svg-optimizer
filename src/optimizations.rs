@@ -2,6 +2,7 @@ use crate::node::Node;
 use anyhow::Result;
 // use itertools::Itertools;
 
+// TODO: potentially remove if not needed
 // pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
 // where
 //     F: Fn(T) -> Result<Option<T>>,
@@ -127,6 +128,11 @@ use_optimizations!(
         remove_empty_attributes,
         no_remove_empty_attributes,
         "Remove attributes whose value is an empty string.",
+    ],
+    [
+        remove_empty_texts,
+        no_remove_empty_texts,
+        "Remove empty <text>, <tspan>, <tref> tags.",
     ],
     [
         shorten_ids,
