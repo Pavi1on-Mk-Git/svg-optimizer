@@ -102,6 +102,11 @@ use_optimizations!(
         extract_common_attributes,
         no_extract_common_attributes,
         "Extract common attributes in a group into the group",
+    ],
+    [
+        remove_unused_defs,
+        no_remove_unused_defs,
+        "Remove defined objects which are not used anywhere",
     ]
 );
 

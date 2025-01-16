@@ -1,5 +1,5 @@
 use super::common::constants::*;
-use super::common::helpers::find_ids_for_subtree;
+use super::common::id::find_ids_for_subtree;
 use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use anyhow::Result;
