@@ -3,6 +3,10 @@ use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
+pub const NO_GROUP_ATTRIBUTES: [&str; 10] = [
+    "cx", "cy", "height", "width", "x", "y", "r", "rx", "ry", "d",
+];
+
 fn find_common_attributes(nodes: &[Node]) -> Vec<OwnedAttribute> {
     let mut common_attributes = Vec::new();
     let mut found_regular_node = false;
@@ -16,7 +20,7 @@ fn find_common_attributes(nodes: &[Node]) -> Vec<OwnedAttribute> {
             }
         }
     }
-    common_attributes
+    common_attributes.filter(|attr| !NO_GROUP_ATTRIBUTES.contains(&attr.name.local_name.as_str()))
 }
 
 fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribute]) -> Vec<Node> {
@@ -44,9 +48,12 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             let common_attributes = find_common_attributes(&children);
             let children = remove_common_attributes(children, &common_attributes);
 
-            let to_add =
-                common_attributes.filter(|attr| !attributes.iter().any(|a| a.name == attr.name));
-            attributes.extend(to_add);
+            attributes = attributes.filter(|attr| {
+                common_attributes
+                    .iter()
+                    .all(|common_attr| common_attr.name != attr.name)
+            });
+            attributes.extend(common_attributes);
 
             Node::RegularNode {
                 node_type: RegularNodeType::Group,
@@ -91,9 +98,9 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
-        <g fill="white" r="25" stroke-width="5" stroke="green">
-        <circle cx="40" cy="40"/>
-        <circle cx="60" cy="60"/>
+        <g fill="white" stroke-width="5" stroke="green">
+        <circle cx="40" cy="40" r="25"/>
+        <circle cx="60" cy="60" r="25"/>
         </g>
         </svg>
         "#
@@ -104,7 +111,7 @@ mod tests {
         extract_common_attributes,
         r#"
         <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-        <g fill="white" r="20">
+        <g fill="white" stroke="red">
         <circle cx="40" cy="40" r="25" stroke-width="5" stroke="green"/>
         <circle cx="60" cy="60" r="25" stroke-width="5" stroke="green"/>
         </g>
@@ -112,9 +119,9 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
-        <g fill="white" r="20" stroke-width="5" stroke="green">
-        <circle cx="40" cy="40"/>
-        <circle cx="60" cy="60"/>
+        <g fill="white" stroke-width="5" stroke="green">
+        <circle cx="40" cy="40" r="25"/>
+        <circle cx="60" cy="60" r="25"/>
         </g>
         </svg>
         "#
@@ -128,7 +135,7 @@ mod tests {
         <g fill="white">
         <circle cx="40" cy="40" r="25"/>
         <circle cx="60" cy="60" r="25"/>
-        <circle cx="60" cy="60" r="20"/>
+        <circle cx="60" cy="60" r="25"/>
         </g>
         </svg>
         "#,
@@ -137,7 +144,7 @@ mod tests {
         <g fill="white">
         <circle cx="40" cy="40" r="25"/>
         <circle cx="60" cy="60" r="25"/>
-        <circle cx="60" cy="60" r="20"/>
+        <circle cx="60" cy="60" r="25"/>
         </g>
         </svg>
         "#
