@@ -115,8 +115,13 @@ use_optimizations!(
     ],
     [
         remove_empty_containers,
-        no_remove_empty_containerss,
+        no_remove_empty_containers,
         "Remove empty container elements",
+    ],
+    [
+        remove_hidden_elements,
+        no_remove_hidden_elements,
+        "Remove elements which would not be rendered",
     ]
 );
 

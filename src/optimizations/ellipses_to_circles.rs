@@ -1,3 +1,4 @@
+use super::common::constants::{RX_NAME, RY_NAME, R_NAME};
 use super::common::iter::EasyIter;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
@@ -24,9 +25,6 @@ fn ellipses_to_circles_from_node(node: Node) -> Node {
     }
 }
 
-const RX_NAME: &str = "rx";
-const RY_NAME: &str = "ry";
-
 fn get_radii(attributes: &[OwnedAttribute]) -> (Option<&OwnedAttribute>, Option<&OwnedAttribute>) {
     let find_attr = |name: &str| {
         attributes
@@ -36,8 +34,6 @@ fn get_radii(attributes: &[OwnedAttribute]) -> (Option<&OwnedAttribute>, Option<
 
     (find_attr(RX_NAME), find_attr(RY_NAME))
 }
-
-const R_NAME: &str = "r";
 
 fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Node {
     let (rx, ry) = get_radii(&attributes);

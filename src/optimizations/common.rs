@@ -1,6 +1,7 @@
 pub mod constants;
 pub mod id;
 pub mod iter;
+pub mod unit;
 
 #[cfg(test)]
 pub mod test {

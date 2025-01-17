@@ -1,42 +1,15 @@
+use super::common::constants::{HEIGHT_NAME, WIDTH_NAME};
 use super::common::iter::EasyIter;
+use super::common::unit::find_and_convert_to_px;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
-use regex::Regex;
 use xml::{attribute::OwnedAttribute, name::OwnedName};
-
-const WIDTH_NAME: &str = "width";
-const HEIGHT_NAME: &str = "height";
 const VIEWBOX_NAME: &str = "viewBox";
 
-fn unit_to_multiplier(unit: &str) -> Option<f64> {
-    // Convert only units which would realistically shorten the value
-    match unit {
-        "px" | "" => Some(1.),
-        "pt" => Some(1.25),
-        "pc" => Some(15.),
-        _ => None,
-    }
-}
-
 fn get_dimensions(attributes: &[OwnedAttribute]) -> (Option<f64>, Option<f64>) {
-    let match_val_and_unit: Regex = Regex::new(r"(.*?)([^\d\.]*)$").unwrap();
-
-    let find_and_convert_to_px = |name: &str| -> Option<f64> {
-        attributes
-            .iter()
-            .find(|attribute| attribute.name.local_name == name)
-            .and_then(|attr| match_val_and_unit.captures(&attr.value))
-            .map(|capture| capture.extract())
-            .and_then(|(_, [val, unit])| {
-                let base_val = val.parse::<f64>().ok()?;
-                let mult = unit_to_multiplier(unit)?;
-                Some(base_val * mult)
-            })
-    };
-
     (
-        find_and_convert_to_px(WIDTH_NAME),
-        find_and_convert_to_px(HEIGHT_NAME),
+        find_and_convert_to_px(attributes, WIDTH_NAME),
+        find_and_convert_to_px(attributes, HEIGHT_NAME),
     )
 }
 

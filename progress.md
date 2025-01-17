@@ -18,7 +18,7 @@
 - ~~usuwanie pustych kontenerów~~
 - ~~usuwanie pustych elementów `<text>`, `<tspan>`, `<tref>` - tref removed from specification~~
 - ~~zamiana atrybutów `width` i `height` na `viewBox`~~
-- usuwanie niewidocznych elementów
+- ~~usuwanie niewidocznych elementów~~
 - usuwanie ścieżek rysowanych poza ekranem
 - usuwanie nieużywanych przestrzeni nazw
 - ~~usuwanie nieużywanych definicji~~
