@@ -27,10 +27,12 @@ fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribut
     nodes.map(|node| match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes: attributes.filter(|attr| !common_attributes.contains(attr)),
             children,
         },
@@ -42,6 +44,7 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type: RegularNodeType::Group,
+            namespace,
             mut attributes,
             children,
         } => {
@@ -57,16 +60,19 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
 
             Node::RegularNode {
                 node_type: RegularNodeType::Group,
+                namespace,
                 attributes,
                 children,
             }
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.map(extract_common_attributes_from_node),
         },

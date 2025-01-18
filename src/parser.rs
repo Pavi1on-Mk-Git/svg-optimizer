@@ -1,7 +1,8 @@
-use crate::node::ChildlessNodeType::*;
-use crate::node::{Node, Node::*, RegularNodeType};
+use crate::node::{ChildlessNodeType::*, NodeNamespace};
+use crate::node::{Node, Node::*};
 use anyhow::Result;
 use std::io::Read;
+use xml::name::OwnedName;
 use xml::{
     attribute::OwnedAttribute,
     namespace::Namespace,
@@ -83,7 +84,7 @@ impl<R: Read> Parser<R> {
     fn parse_regular_node(
         &mut self,
         attributes: Vec<OwnedAttribute>,
-        namespace: Namespace,
+        element_namespace: Namespace,
     ) -> Result<Node> {
         let mut children = Vec::new();
         loop {
@@ -92,7 +93,7 @@ impl<R: Read> Parser<R> {
             if let Some(node) = self.parse_node()? {
                 children.push(node);
             } else {
-                return Ok(self.assemble_regular_node(attributes, namespace, children));
+                return Ok(self.assemble_regular_node(attributes, element_namespace, children));
             }
         }
     }
@@ -100,17 +101,25 @@ impl<R: Read> Parser<R> {
     fn assemble_regular_node(
         &mut self,
         attributes: Vec<OwnedAttribute>,
-        namespace: Namespace,
+        element_namespace: Namespace,
         children: Vec<Node>,
     ) -> Node {
-        if let Some(XmlEvent::EndElement { name }) = self.curr_event.take() {
-            let node_type = if name.local_name == "svg" {
-                RegularNodeType::Svg(namespace)
-            } else {
-                name.into()
-            };
+        if let Some(XmlEvent::EndElement {
+            name:
+                OwnedName {
+                    local_name,
+                    namespace,
+                    prefix,
+                },
+        }) = self.curr_event.take()
+        {
             RegularNode {
-                node_type,
+                node_type: local_name.into(),
+                namespace: NodeNamespace {
+                    parent_namespace: namespace,
+                    prefix,
+                    element_namespace,
+                },
                 attributes,
                 children,
             }
@@ -123,6 +132,7 @@ impl<R: Read> Parser<R> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::node::RegularNodeType;
 
     #[test]
     fn test_parse_tag() -> Result<()> {
@@ -153,14 +163,16 @@ mod tests {
         match only_node {
             RegularNode {
                 node_type,
+                namespace,
                 attributes,
                 children,
             } => {
-                let mut namespace = Namespace::empty();
-                namespace.put("", "http://www.w3.org/2000/svg");
-                namespace.put("xml", "http://www.w3.org/XML/1998/namespace");
-                namespace.put("xmlns", "http://www.w3.org/2000/xmlns/");
-                assert_eq!(node_type, RegularNodeType::Svg(namespace));
+                let mut element_namespace = Namespace::empty();
+                element_namespace.put("", "http://www.w3.org/2000/svg");
+                element_namespace.put("xml", "http://www.w3.org/XML/1998/namespace");
+                element_namespace.put("xmlns", "http://www.w3.org/2000/xmlns/");
+                assert_eq!(node_type, RegularNodeType::Svg);
+                assert_eq!(namespace.element_namespace, element_namespace);
                 assert_eq!(attributes.len(), 2);
                 assert_eq!(children.len(), 3); // 2 whitespace children
             }

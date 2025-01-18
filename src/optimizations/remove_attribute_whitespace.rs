@@ -8,10 +8,12 @@ fn remove_attribute_whitespace_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes: attributes.map(|OwnedAttribute { name, value }| OwnedAttribute {
                 name,
                 value: value.split_whitespace().join(" "),

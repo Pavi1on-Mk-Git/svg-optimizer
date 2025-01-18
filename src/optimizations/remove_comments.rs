@@ -6,10 +6,12 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
     match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_comments_from_node),
         }),

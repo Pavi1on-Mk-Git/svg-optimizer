@@ -108,10 +108,12 @@ fn remove_hidden_elements_from_node(node: Node) -> Option<Node> {
     (!should_remove(&node)).then_some(match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_hidden_elements_from_node),
         },

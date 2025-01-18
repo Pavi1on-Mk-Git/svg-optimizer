@@ -17,6 +17,7 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
     match node {
         Node::RegularNode {
             node_type: node_type @ (RegularNodeType::Text | RegularNodeType::TSpan),
+            namespace,
             attributes,
             children,
         } => {
@@ -30,16 +31,19 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
 
             (!non_whitespace_children.is_empty()).then_some(Node::RegularNode {
                 node_type,
+                namespace,
                 attributes,
                 children: new_children,
             })
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_empty_texts_from_node),
         }),

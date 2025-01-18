@@ -6,12 +6,14 @@ fn sort_attributes_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type,
+            namespace,
             mut attributes,
             children,
         } => {
             attributes.sort_unstable_by(|fst, snd| fst.name.local_name.cmp(&snd.name.local_name));
             Node::RegularNode {
                 node_type,
+                namespace,
                 attributes,
                 children: children.map(sort_attributes_from_node),
             }

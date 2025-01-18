@@ -1,5 +1,5 @@
 use super::common::iter::EasyIter;
-use crate::node::{Node, RegularNodeType};
+use crate::node::{Node, NodeNamespace, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
@@ -7,6 +7,7 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
     match node {
         Node::RegularNode {
             node_type: RegularNodeType::Group,
+            namespace: parent_namespace,
             attributes: parent_attr,
             children,
         } => {
@@ -14,9 +15,14 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
 
             match new_children.len() {
                 0 => None,
-                1 => Some(create_new_group(new_children.remove(0), parent_attr)),
+                1 => Some(create_new_group(
+                    new_children.remove(0),
+                    parent_namespace,
+                    parent_attr,
+                )),
                 _ => Some(Node::RegularNode {
                     node_type: RegularNodeType::Group,
+                    namespace: parent_namespace,
                     attributes: parent_attr,
                     children: new_children,
                 }),
@@ -24,10 +30,12 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_useless_groups_from_node),
         }),
@@ -35,21 +43,28 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
     }
 }
 
-fn create_new_group(only_child: Node, group_attributes: Vec<OwnedAttribute>) -> Node {
+fn create_new_group(
+    only_child: Node,
+    group_namespace: NodeNamespace,
+    group_attributes: Vec<OwnedAttribute>,
+) -> Node {
     if let Node::RegularNode {
         node_type,
+        namespace,
         attributes,
         children,
     } = only_child
     {
         Node::RegularNode {
             node_type,
+            namespace, //TODO Check if it needs merging of namespaces
             attributes: merge_attributes(group_attributes, attributes),
             children,
         }
     } else {
         Node::RegularNode {
             node_type: RegularNodeType::Group,
+            namespace: group_namespace,
             attributes: group_attributes,
             children: vec![only_child],
         }

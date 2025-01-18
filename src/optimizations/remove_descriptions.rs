@@ -11,10 +11,12 @@ fn remove_descriptions_from_node(node: Node) -> Option<Node> {
         } => None,
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_descriptions_from_node),
         }),

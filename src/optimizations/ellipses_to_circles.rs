@@ -1,6 +1,6 @@
 use super::common::constants::{RX_NAME, RY_NAME, R_NAME};
 use super::common::iter::EasyIter;
-use crate::node::{Node, RegularNodeType};
+use crate::node::{Node, NodeNamespace, RegularNodeType};
 use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 use xml::name::OwnedName;
@@ -9,15 +9,19 @@ fn ellipses_to_circles_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type: RegularNodeType::Ellipse,
+            namespace,
             attributes,
             children,
-        } => get_new_node(attributes, children),
+            ..
+        } => get_new_node(namespace, attributes, children),
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.map(ellipses_to_circles_from_node),
         },
@@ -35,7 +39,11 @@ fn get_radii(attributes: &[OwnedAttribute]) -> (Option<&OwnedAttribute>, Option<
     (find_attr(RX_NAME), find_attr(RY_NAME))
 }
 
-fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Node {
+fn get_new_node(
+    namespace: NodeNamespace,
+    mut attributes: Vec<OwnedAttribute>,
+    children: Vec<Node>,
+) -> Node {
     let (rx, ry) = get_radii(&attributes);
 
     let node_type = match (rx, ry) {
@@ -43,8 +51,8 @@ fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Nod
             let radius_attribute = OwnedAttribute {
                 name: OwnedName {
                     local_name: R_NAME.into(),
-                    namespace: None,
-                    prefix: None,
+                    namespace: rx.name.namespace.clone(),
+                    prefix: rx.name.prefix.clone(),
                 },
                 value: rx.value.clone(),
             };
@@ -62,6 +70,7 @@ fn get_new_node(mut attributes: Vec<OwnedAttribute>, children: Vec<Node>) -> Nod
 
     Node::RegularNode {
         node_type,
+        namespace,
         attributes,
         children,
     }

@@ -18,6 +18,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
     match node {
         Node::RegularNode {
             node_type: RegularNodeType::Defs,
+            namespace,
             attributes,
             children,
         } => {
@@ -27,6 +28,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
                 0 => None,
                 _ => Some(Node::RegularNode {
                     node_type: RegularNodeType::Defs,
+                    namespace,
                     attributes,
                     children: new_children,
                 }),
@@ -34,10 +36,12 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(|node| remove_unused_defs_for_node(node, id_usage_map)),
         }),

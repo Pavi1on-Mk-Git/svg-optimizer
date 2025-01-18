@@ -6,10 +6,12 @@ fn remove_empty_attributes_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes: attributes.filter(|attribute| !attribute.value.is_empty()),
             children: children.map(remove_empty_attributes_from_node),
         },

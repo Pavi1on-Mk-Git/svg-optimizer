@@ -5,9 +5,17 @@ use xml::namespace::Namespace;
 use xml::reader::XmlEvent;
 
 #[derive(Debug)]
+pub struct NodeNamespace {
+    pub parent_namespace: Option<String>,
+    pub prefix: Option<String>,
+    pub element_namespace: Namespace,
+}
+
+#[derive(Debug)]
 pub enum Node {
     RegularNode {
         node_type: RegularNodeType,
+        namespace: NodeNamespace,
         attributes: Vec<OwnedAttribute>,
         children: Vec<Node>,
     },
@@ -17,19 +25,21 @@ pub enum Node {
 }
 
 impl RegularNodeType {
-    fn tags(self, attributes: Vec<OwnedAttribute>) -> (XmlEvent, XmlEvent) {
-        let namespace = if let RegularNodeType::Svg(namespace) = &self {
-            namespace.clone()
-        } else {
-            Namespace::empty()
+    fn tags(
+        self,
+        namespace: NodeNamespace,
+        attributes: Vec<OwnedAttribute>,
+    ) -> (XmlEvent, XmlEvent) {
+        let name = OwnedName {
+            local_name: self.to_string(),
+            namespace: namespace.parent_namespace,
+            prefix: namespace.prefix,
         };
-
-        let name: OwnedName = self.into();
         (
             XmlEvent::StartElement {
                 name: name.clone(),
                 attributes,
-                namespace,
+                namespace: namespace.element_namespace,
             },
             XmlEvent::EndElement { name },
         )
@@ -41,14 +51,13 @@ macro_rules! conversions {
 
         #[derive(Debug, PartialEq, Eq)]
         pub enum RegularNodeType {
-            Svg(Namespace),
             Unknown(String),
             $($node_type,)*
         }
 
-        impl From<OwnedName> for RegularNodeType {
-            fn from(value: OwnedName) -> Self {
-                match value.local_name.as_str() {
+        impl From<String> for RegularNodeType {
+            fn from(value: String) -> Self {
+                match value.as_str() {
                     $($name => Self::$node_type,)*
                     name => Self::Unknown(name.into()),
                 }
@@ -58,7 +67,6 @@ macro_rules! conversions {
         impl fmt::Display for RegularNodeType {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
                 let name = match self {
-                    RegularNodeType::Svg(_) => "svg",
                     RegularNodeType::Unknown(name) => name,
                     $(RegularNodeType::$node_type => $name,)*
                 };
@@ -137,6 +145,7 @@ conversions!(
     [Set, "set"],
     [Stop, "stop"],
     [Style, "style"],
+    [Svg, "svg"],
     [Switch, "switch"],
     [Symbol, "symbol"],
     [Text, "text"],
@@ -180,10 +189,11 @@ impl IntoIterator for Node {
         match self {
             Node::RegularNode {
                 node_type,
+                namespace,
                 attributes,
                 children,
             } => {
-                let (start_tag, end_tag) = node_type.tags(attributes);
+                let (start_tag, end_tag) = node_type.tags(namespace, attributes);
                 NodeIter::RegularNodeIter {
                     start_tag: Some(start_tag),
                     end_tag: Some(end_tag),

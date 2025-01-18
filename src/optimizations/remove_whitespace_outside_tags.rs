@@ -11,10 +11,12 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
         } => Some(text),
         RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_whitespace_outside_tags_from_node),
         }),

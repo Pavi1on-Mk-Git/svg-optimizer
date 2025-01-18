@@ -63,6 +63,7 @@ fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
         node_type,
         attributes,
         children,
+        ..
     } = node
     {
         attributes

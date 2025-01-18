@@ -12,9 +12,10 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
                 | RegularNodeType::Marker
                 | RegularNodeType::Mask
                 | RegularNodeType::Pattern
-                | RegularNodeType::Svg(_)
+                | RegularNodeType::Svg
                 | RegularNodeType::Switch
                 | RegularNodeType::Symbol),
+            namespace,
             attributes,
             children,
         } => {
@@ -24,6 +25,7 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
                 0 => None,
                 _ => Some(Node::RegularNode {
                     node_type,
+                    namespace,
                     attributes,
                     children: new_children,
                 }),
@@ -31,10 +33,12 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Some(Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.filter_map(remove_empty_containers_from_node),
         }),

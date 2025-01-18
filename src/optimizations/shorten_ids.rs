@@ -86,6 +86,7 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
     match node {
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => {
@@ -97,6 +98,7 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
 
             Node::RegularNode {
                 node_type,
+                namespace,
                 attributes: attributes.map(|attribute| shorten_id_in_attribute(attribute, id_map)),
                 children: children.map(|child| shorten_func(child, id_map)),
             }

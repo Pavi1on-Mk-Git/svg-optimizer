@@ -19,11 +19,13 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
             node_type:
                 node_type @ (RegularNodeType::Marker
                 | RegularNodeType::Pattern
-                | RegularNodeType::Svg(_)
+                | RegularNodeType::Svg
                 | RegularNodeType::Symbol
                 | RegularNodeType::View),
+            namespace,
             mut attributes,
             children,
+            ..
         } => {
             let (width, height) = get_dimensions(&attributes);
 
@@ -46,16 +48,19 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
 
             Node::RegularNode {
                 node_type,
+                namespace,
                 attributes,
                 children: children.map(convert_to_viewbox_from_node),
             }
         }
         Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children,
         } => Node::RegularNode {
             node_type,
+            namespace,
             attributes,
             children: children.map(convert_to_viewbox_from_node),
         },
