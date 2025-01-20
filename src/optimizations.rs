@@ -150,6 +150,11 @@ use_optimizations!(
         remove_editor_namespace_data,
         no_remove_editor_namespace_data,
         "Remove editor namespaces, elements and attributes.",
+    ],
+    [
+        merge_transforms,
+        no_merge_transforms,
+        "Merge transforms into a single matrix.",
     ]
 );
 
