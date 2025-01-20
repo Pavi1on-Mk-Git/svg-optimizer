@@ -57,3 +57,5 @@ Dokumentacja użytkownika została zawarta w README.md.
 ## Dodatkowe informacje
 
 Liczba linii kodu wynosi 4001. Liczba testów wynosi 63. Pokrycie kodu testami wynosi 91.28%. Liczba godzin poświęconych na projekt wynosi w sumie około 100.
+
+Projekt jest dobry, ponieważ skutecznie zmniejsza rozmiar plików SVG - na jednym z przykładów w katalogu `examples/`, rzeczywistym pliku SVG znalezionym na komputerze jednego z autorów, udało się osiągnąć nawet 50% zmniejszenie rozmiaru.
