@@ -2,7 +2,8 @@ use super::common::{constants::*, iter::EasyIter};
 use crate::node::{Node, RegularNodeType};
 use xml::attribute::OwnedAttribute;
 
-pub const NO_GROUP_ATTRIBUTES: [&str; 10] = [
+pub const NO_GROUP_ATTRIBUTES: [&str; 11] = [
+    ID_NAME,
     CX_NAME,
     CY_NAME,
     HEIGHT_NAME,
