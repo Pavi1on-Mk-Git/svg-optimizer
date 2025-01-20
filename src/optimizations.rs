@@ -77,11 +77,6 @@ use_optimizations!(
         "Remove all comments.",
     ],
     [
-        remove_doctype,
-        no_remove_doctype,
-        "Remove DOCTYPE processing instruction.",
-    ],
-    [
         remove_descriptions,
         no_remove_descriptions,
         "Remove <title>, <metadata>, <desc> tags and their contents.",
@@ -157,15 +152,17 @@ pub mod test {
     test_optimize!(
         test_no_optimizations,
         identity,
-        r#"
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
         <svg xmlns="http://www.w3.org/2000/svg">
         <g fill="white" stroke="green" stroke-width="5"><circle cx="40" cy="40" r="25"/></g>
         <g><g/></g></svg>
         "#,
         r#"
+
         <svg xmlns="http://www.w3.org/2000/svg">
         <g fill="white" stroke="green" stroke-width="5"><circle cx="40" cy="40" r="25"/></g>
         <g><g/></g></svg>
         "#
-    ); // TODO: test DOCTYPE perhaps also xml
+    );
 }

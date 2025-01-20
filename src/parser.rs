@@ -10,8 +10,10 @@ use xml::{
     EventReader,
 };
 
-/// Parses input stream of events provided by svg library into the output tree format of the svg library.
-/// Currently only supports tag &lt;svg&gt;.
+/// Parses input stream of events provided by xml library into the internal node tree format.
+///
+/// Because of library limitations, xml and DOCTYPE declarations are skipped.
+/// Whitespace between attributes, as well as their order, are lost as well.
 pub struct Parser<R: Read> {
     source: EventReader<R>,
     curr_event: Option<XmlEvent>,
