@@ -134,7 +134,7 @@ use_optimizations!(
     ],
     [
         remove_dimensions,
-        no_convert_to_viewbox,
+        no_remove_dimensions,
         "Remove width and height if they are equal to values in viewBox.",
     ],
     [
