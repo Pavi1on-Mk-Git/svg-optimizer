@@ -77,7 +77,7 @@ fn string_to_matrix(matrix_string: &str) -> Option<Matrix3<f64>> {
         "rotate" => rotate(transform_arguments),
         "skewX" => skew_x(transform_arguments),
         "skewY" => skew_y(transform_arguments),
-        _ => None,
+        _ => None, // not handling CSS transform functions
     }
 }
 
@@ -102,6 +102,7 @@ fn merge_transform_attribute(transform_str: &str, precision: usize) -> String {
         .filter(|substring| !substring.trim().is_empty())
     {
         if let Some(transform) = string_to_matrix(transform) {
+            println!("{:?}", transform);
             result *= transform;
         } else {
             return transform_str.into();
