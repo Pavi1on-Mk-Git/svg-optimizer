@@ -9,7 +9,9 @@ fn round_floats_in_attribute(mut attr: OwnedAttribute, precision: usize) -> Owne
         attr.value.as_str(),
         |float: &str, _| {
             let rounded = format!("{:.1$}", float.parse::<f64>().unwrap(), precision);
-            regex_replace!(r"\.?0*$", rounded.as_str(), "").into_owned()
+            let no_trailing_zeros = regex_replace!(r"\.?0*$", rounded.as_str(), "");
+            let no_leading_zeros = regex_replace!(r"(^|\D)0+([\d\.])", &no_trailing_zeros, "$1$2");
+            no_leading_zeros.into_owned()
         }
     )
     .into_owned();
@@ -52,12 +54,12 @@ mod tests {
         test_round_floats,
         test_round,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100.101 100">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 -00.101 00100.12">
         <path d="M 10,30.157 A 20,20.123 0,0,1 50,3.1e1 A 20.301,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 1.9E1,30 z"/>
         </svg>
         "#,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100.1 100">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 -.1 100.12">
         <path d="M 10,30.16 A 20,20.12 0,0,1 50,31 A 20.3,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 19,30 z"/>
         </svg>
         "#
