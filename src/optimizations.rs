@@ -1,5 +1,4 @@
 use crate::node::Node;
-use anyhow::Result;
 
 pub mod common;
 
@@ -40,7 +39,7 @@ macro_rules! use_optimizations {
         }
 
         impl Optimizations {
-            pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
+            pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Vec<Node> {
                 $(
                     if self.$regular_opt_name || (default_all && !self.$disable_flag_name) {
                         nodes = $regular_opt_name(nodes);
@@ -53,7 +52,7 @@ macro_rules! use_optimizations {
                     }
                 )*
 
-                Ok(nodes)
+                nodes
             }
 
             $(

@@ -2,6 +2,7 @@ use crate::optimizations::*;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
 use anyhow::{Error, Result};
+use rayon::prelude::*;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::BufReader;
@@ -58,7 +59,7 @@ impl Optimizer {
         let mut parser = Parser::new(file)?;
 
         let nodes = parser.parse_document()?;
-        let optimized = self.optimizations.apply(nodes, !self.disable_by_default)?;
+        let optimized = self.optimizations.apply(nodes, !self.disable_by_default);
 
         let output_path = Self::get_output_path(input_path, output_path_arg)?;
         let output_file = File::create(output_path)?;
@@ -85,15 +86,16 @@ impl Optimizer {
         self.validate_args()?;
 
         if self.output_file_names.is_empty() {
-            for input_path in self.file_names.iter() {
-                self.optimize_file(input_path, None)?;
-            }
+            self.file_names
+                .par_iter()
+                .try_for_each(|input_path| self.optimize_file(input_path, None))?
         } else {
-            for (input_path, output_path) in
-                self.file_names.iter().zip(self.output_file_names.iter())
-            {
-                self.optimize_file(input_path, Some(output_path))?;
-            }
+            self.file_names
+                .par_iter()
+                .zip(self.output_file_names.par_iter())
+                .try_for_each(|(input_path, output_path)| {
+                    self.optimize_file(input_path, Some(output_path))
+                })?;
         }
         Ok(())
     }
