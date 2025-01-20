@@ -101,27 +101,27 @@ use_optimizations!(
     [
         extract_common_attributes,
         no_extract_common_attributes,
-        "Extract common attributes in a group into the group",
+        "Extract common attributes in a group into the group.",
     ],
     [
         remove_unused_defs,
         no_remove_unused_defs,
-        "Remove defined objects which are not used anywhere",
+        "Remove defined objects which are not used anywhere.",
     ],
     [
-        convert_to_viewbox,
+        remove_dimensions,
         no_convert_to_viewbox,
-        "Convert width and height to viewbox. Conversion may result in floating point numbers and thus create a larger file",
+        "Remove width and height if they are equal to values in viewBox.",
     ],
     [
         remove_empty_containers,
         no_remove_empty_containers,
-        "Remove empty container elements",
+        "Remove empty container elements.",
     ],
     [
         remove_hidden_elements,
         no_remove_hidden_elements,
-        "Remove elements which would not be rendered",
+        "Remove elements which would not be rendered.",
     ]
 );
 
