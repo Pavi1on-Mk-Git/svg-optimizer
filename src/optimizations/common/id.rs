@@ -45,14 +45,13 @@ fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<
                 }
             }
         }
-        STYLE_NAME => {
+        _ => {
             for (id, value_in_map) in id_map.iter_mut() {
                 if attribute.value.contains(&format!("url(#{id})")) {
                     *value_in_map = true;
                 }
             }
         }
-        _ => {}
     }
 }
 
