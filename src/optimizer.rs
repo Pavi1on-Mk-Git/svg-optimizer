@@ -11,7 +11,6 @@ use std::path::{Path, PathBuf};
 /// Program that optimizes the size of SVG files.
 ///
 /// By default, all optimizations that do not take parameters are enabled.
-/// See README for descriptions of each optimization.
 #[derive(clap::Parser)]
 #[command(version)]
 pub struct Optimizer {

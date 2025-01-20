@@ -27,4 +27,3 @@ You can also disable all optimizations by default with `-d` and only enable a se
 Lossy optimizations need to be explicitly enabled. The flags to achieve this are `--merge-transforms` and `--round-floats`. Precision of the floating-point numbers that they output is controlled by the `--precision` flag; by default it is set to 3.
 
 Description of each flag is available after running `just run --help`.
-
