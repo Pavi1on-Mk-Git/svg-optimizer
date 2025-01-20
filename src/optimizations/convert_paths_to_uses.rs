@@ -158,7 +158,7 @@ fn merge_paths_for_node(
     }
 }
 
-pub fn merge_identical_paths(nodes: Vec<Node>) -> Vec<Node> {
+pub fn convert_paths_to_uses(nodes: Vec<Node>) -> Vec<Node> {
     let path_usages = find_path_usages(&nodes);
     let mut paths_map = prepare_map_for_paths(&nodes, path_usages);
     let mut id_map = BTreeMap::new();
@@ -177,8 +177,8 @@ mod tests {
     use crate::writer::SVGWriter;
 
     test_optimize!(
-        test_merge_identical_paths,
-        merge_identical_paths,
+        test_convert_paths_to_uses,
+        convert_paths_to_uses,
         r##"<svg xmlns="http://www.w3.org/2000/svg">
         <path id="abcd1" d="M150 5 L75 200 L225 200 Z"/>
         <g>
@@ -202,8 +202,8 @@ mod tests {
     );
 
     test_optimize!(
-        test_merge_identical_paths_with_used_ids,
-        merge_identical_paths,
+        test_convert_paths_to_uses_with_used_ids,
+        convert_paths_to_uses,
         r##"<svg xmlns="http://www.w3.org/2000/svg">
         <path id="abcd1" d="M150 5 L75 200 L225 200 Z"/>
         <path id="abcd2" d="M150 5 L75 200 L225 200 Z"/>

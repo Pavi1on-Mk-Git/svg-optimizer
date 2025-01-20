@@ -142,8 +142,8 @@ use_optimizations!(
         "Remove fill and stroke attributes which would not be rendered.",
     ],
     [
-        merge_identical_paths,
-        no_merge_identical_paths,
+        convert_paths_to_uses,
+        no_convert_paths_to_uses,
         "Replace identical paths with <use>s of a single path.",
     ],
     [
