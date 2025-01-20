@@ -145,6 +145,11 @@ use_optimizations!(
         merge_identical_paths,
         no_merge_identical_paths,
         "Replace identical paths with <use>s of a single path.",
+    ],
+    [
+        remove_editor_namespace_data,
+        no_remove_editor_namespace_data,
+        "Remove editor namespaces, elements and attributes.",
     ]
 );
 
