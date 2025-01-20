@@ -39,7 +39,7 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
                     value: format!("0 0 {width} {height}"),
                 };
 
-                attributes = attributes.filter(|attr| {
+                attributes = attributes.filter_to_vec(|attr| {
                     let name = &attr.name.local_name;
                     name != WIDTH_NAME && name != HEIGHT_NAME
                 });
@@ -50,7 +50,7 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
                 node_type,
                 namespace,
                 attributes,
-                children: children.map(convert_to_viewbox_from_node),
+                children: children.map_to_vec(convert_to_viewbox_from_node),
             }
         }
         Node::RegularNode {
@@ -62,14 +62,14 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map(convert_to_viewbox_from_node),
+            children: children.map_to_vec(convert_to_viewbox_from_node),
         },
         other => other,
     }
 }
 
 pub fn convert_to_viewbox(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map(convert_to_viewbox_from_node))
+    Ok(nodes.map_to_vec(convert_to_viewbox_from_node))
 }
 
 #[cfg(test)]

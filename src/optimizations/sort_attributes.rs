@@ -15,7 +15,7 @@ fn sort_attributes_from_node(node: Node) -> Node {
                 node_type,
                 namespace,
                 attributes,
-                children: children.map(sort_attributes_from_node),
+                children: children.map_to_vec(sort_attributes_from_node),
             }
         }
         other => other,
@@ -23,7 +23,7 @@ fn sort_attributes_from_node(node: Node) -> Node {
 }
 
 pub fn sort_attributes(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map(sort_attributes_from_node))
+    Ok(nodes.map_to_vec(sort_attributes_from_node))
 }
 
 #[cfg(test)]

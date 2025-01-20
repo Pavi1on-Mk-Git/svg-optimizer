@@ -14,18 +14,18 @@ fn remove_attribute_whitespace_from_node(node: Node) -> Node {
         } => Node::RegularNode {
             node_type,
             namespace,
-            attributes: attributes.map(|OwnedAttribute { name, value }| OwnedAttribute {
+            attributes: attributes.map_to_vec(|OwnedAttribute { name, value }| OwnedAttribute {
                 name,
                 value: value.split_whitespace().join(" "),
             }),
-            children: children.map(remove_attribute_whitespace_from_node),
+            children: children.map_to_vec(remove_attribute_whitespace_from_node),
         },
         other => other,
     }
 }
 
 pub fn remove_attribute_whitespace(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map(remove_attribute_whitespace_from_node))
+    Ok(nodes.map_to_vec(remove_attribute_whitespace_from_node))
 }
 
 #[cfg(test)]

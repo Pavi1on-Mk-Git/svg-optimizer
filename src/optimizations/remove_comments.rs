@@ -13,7 +13,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_comments_from_node),
+            children: children.filter_map_to_vec(remove_comments_from_node),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Comment(_),
@@ -23,7 +23,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_comments(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_comments_from_node))
+    Ok(nodes.filter_map_to_vec(remove_comments_from_node))
 }
 
 #[cfg(test)]

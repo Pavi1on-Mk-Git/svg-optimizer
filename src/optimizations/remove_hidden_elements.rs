@@ -115,14 +115,14 @@ fn remove_hidden_elements_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_hidden_elements_from_node),
+            children: children.filter_map_to_vec(remove_hidden_elements_from_node),
         },
         other => other,
     })
 }
 
 pub fn remove_hidden_elements(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_hidden_elements_from_node))
+    Ok(nodes.filter_map_to_vec(remove_hidden_elements_from_node))
 }
 
 #[cfg(test)]

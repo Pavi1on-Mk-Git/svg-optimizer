@@ -23,7 +23,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map(ellipses_to_circles_from_node),
+            children: children.map_to_vec(ellipses_to_circles_from_node),
         },
         childless_node => childless_node,
     }
@@ -57,7 +57,7 @@ fn get_new_node(
                 value: rx.value.clone(),
             };
 
-            attributes = attributes.filter(|attr| {
+            attributes = attributes.filter_to_vec(|attr| {
                 let name = &attr.name.local_name;
                 name != RX_NAME && name != RY_NAME
             });
@@ -77,7 +77,7 @@ fn get_new_node(
 }
 
 pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map(ellipses_to_circles_from_node))
+    Ok(nodes.map_to_vec(ellipses_to_circles_from_node))
 }
 
 #[cfg(test)]

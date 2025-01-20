@@ -13,7 +13,7 @@ fn remove_doctype_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_doctype_from_node),
+            children: children.filter_map_to_vec(remove_doctype_from_node),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::ProcessingInstruction(_, _),
@@ -23,7 +23,7 @@ fn remove_doctype_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_doctype(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_doctype_from_node))
+    Ok(nodes.filter_map_to_vec(remove_doctype_from_node))
 }
 
 #[cfg(test)]

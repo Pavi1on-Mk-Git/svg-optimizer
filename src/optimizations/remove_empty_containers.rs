@@ -19,7 +19,8 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
             attributes,
             children,
         } => {
-            let new_children: Vec<Node> = children.filter_map(remove_empty_containers_from_node);
+            let new_children: Vec<Node> =
+                children.filter_map_to_vec(remove_empty_containers_from_node);
 
             match new_children.len() {
                 0 => None,
@@ -40,14 +41,14 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_empty_containers_from_node),
+            children: children.filter_map_to_vec(remove_empty_containers_from_node),
         }),
         other => Some(other),
     }
 }
 
 pub fn remove_empty_containers(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_empty_containers_from_node))
+    Ok(nodes.filter_map_to_vec(remove_empty_containers_from_node))
 }
 
 #[cfg(test)]

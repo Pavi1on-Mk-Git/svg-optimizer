@@ -21,7 +21,7 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
             attributes,
             children,
         } => {
-            let new_children: Vec<Node> = children.filter_map(remove_empty_texts_from_node);
+            let new_children: Vec<Node> = children.filter_map_to_vec(remove_empty_texts_from_node);
 
             let non_whitespace_children: Vec<&Node> =
                 std::iter::Iterator::filter(new_children.iter(), |child| {
@@ -45,14 +45,14 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_empty_texts_from_node),
+            children: children.filter_map_to_vec(remove_empty_texts_from_node),
         }),
         other => Some(other),
     }
 }
 
 pub fn remove_empty_texts(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_empty_texts_from_node))
+    Ok(nodes.filter_map_to_vec(remove_empty_texts_from_node))
 }
 
 #[cfg(test)]

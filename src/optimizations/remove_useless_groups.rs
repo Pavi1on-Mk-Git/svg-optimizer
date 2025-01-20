@@ -11,7 +11,8 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
             attributes: parent_attr,
             children,
         } => {
-            let mut new_children: Vec<Node> = children.filter_map(remove_useless_groups_from_node);
+            let mut new_children: Vec<Node> =
+                children.filter_map_to_vec(remove_useless_groups_from_node);
 
             match new_children.len() {
                 0 => None,
@@ -37,7 +38,7 @@ fn remove_useless_groups_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_useless_groups_from_node),
+            children: children.filter_map_to_vec(remove_useless_groups_from_node),
         }),
         other => Some(other),
     }
@@ -81,7 +82,7 @@ fn merge_attributes(
 }
 
 pub fn remove_useless_groups(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_useless_groups_from_node))
+    Ok(nodes.filter_map_to_vec(remove_useless_groups_from_node))
 }
 
 #[cfg(test)]

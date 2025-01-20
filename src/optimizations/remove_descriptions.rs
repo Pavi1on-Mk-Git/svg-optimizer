@@ -18,14 +18,14 @@ fn remove_descriptions_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_descriptions_from_node),
+            children: children.filter_map_to_vec(remove_descriptions_from_node),
         }),
         other => Some(other),
     }
 }
 
 pub fn remove_descriptions(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_descriptions_from_node))
+    Ok(nodes.filter_map_to_vec(remove_descriptions_from_node))
 }
 
 #[cfg(test)]

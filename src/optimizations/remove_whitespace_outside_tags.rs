@@ -18,7 +18,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(remove_whitespace_outside_tags_from_node),
+            children: children.filter_map_to_vec(remove_whitespace_outside_tags_from_node),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(text, is_cdata),
@@ -31,7 +31,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
 }
 
 pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map(remove_whitespace_outside_tags_from_node))
+    Ok(nodes.filter_map_to_vec(remove_whitespace_outside_tags_from_node))
 }
 
 #[cfg(test)]

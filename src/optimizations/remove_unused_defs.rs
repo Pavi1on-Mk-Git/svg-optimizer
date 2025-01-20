@@ -22,7 +22,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
             attributes,
             children,
         } => {
-            let new_children = children.filter(|child| is_used(child, id_usage_map));
+            let new_children = children.filter_to_vec(|child| is_used(child, id_usage_map));
 
             match new_children.len() {
                 0 => None,
@@ -43,7 +43,8 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
             node_type,
             namespace,
             attributes,
-            children: children.filter_map(|node| remove_unused_defs_for_node(node, id_usage_map)),
+            children: children
+                .filter_map_to_vec(|node| remove_unused_defs_for_node(node, id_usage_map)),
         }),
         other => Some(other),
     }
@@ -51,7 +52,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
 
 pub fn remove_unused_defs(nodes: Vec<Node>) -> Result<Vec<Node>> {
     let id_usage_map = make_id_usage_map(&nodes);
-    Ok(nodes.filter_map(|node| remove_unused_defs_for_node(node, &id_usage_map)))
+    Ok(nodes.filter_map_to_vec(|node| remove_unused_defs_for_node(node, &id_usage_map)))
 }
 
 #[cfg(test)]

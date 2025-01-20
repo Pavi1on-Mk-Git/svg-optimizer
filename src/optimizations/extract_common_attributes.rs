@@ -20,11 +20,12 @@ fn find_common_attributes(nodes: &[Node]) -> Vec<OwnedAttribute> {
             }
         }
     }
-    common_attributes.filter(|attr| !NO_GROUP_ATTRIBUTES.contains(&attr.name.local_name.as_str()))
+    common_attributes
+        .filter_to_vec(|attr| !NO_GROUP_ATTRIBUTES.contains(&attr.name.local_name.as_str()))
 }
 
 fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribute]) -> Vec<Node> {
-    nodes.map(|node| match node {
+    nodes.map_to_vec(|node| match node {
         Node::RegularNode {
             node_type,
             namespace,
@@ -33,7 +34,7 @@ fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribut
         } => Node::RegularNode {
             node_type,
             namespace,
-            attributes: attributes.filter(|attr| !common_attributes.contains(attr)),
+            attributes: attributes.filter_to_vec(|attr| !common_attributes.contains(attr)),
             children,
         },
         other => other,
@@ -51,7 +52,7 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             let common_attributes = find_common_attributes(&children);
             let children = remove_common_attributes(children, &common_attributes);
 
-            attributes = attributes.filter(|attr| {
+            attributes = attributes.filter_to_vec(|attr| {
                 common_attributes
                     .iter()
                     .all(|common_attr| common_attr.name != attr.name)
@@ -74,14 +75,14 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map(extract_common_attributes_from_node),
+            children: children.map_to_vec(extract_common_attributes_from_node),
         },
         other => other,
     }
 }
 
 pub fn extract_common_attributes(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map(extract_common_attributes_from_node))
+    Ok(nodes.map_to_vec(extract_common_attributes_from_node))
 }
 
 #[cfg(test)]
