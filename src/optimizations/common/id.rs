@@ -6,10 +6,11 @@ use std::collections::BTreeMap;
 use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
 
-fn find_id(attributes: &[OwnedAttribute]) -> Option<String> {
+// TODO: maybe move this elsewhere?
+pub fn find_attribute(attributes: &[OwnedAttribute], name: &str) -> Option<String> {
     attributes
         .iter()
-        .find(|attr| attr.name.local_name == ID_NAME)
+        .find(|attr| attr.name.local_name == name)
         .map(|id| id.value.clone())
 }
 
@@ -23,7 +24,7 @@ pub fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
             ..
         } = node
         {
-            if let Some(id) = find_id(attributes) {
+            if let Some(id) = find_attribute(attributes, ID_NAME) {
                 ids.push(id);
             }
 

@@ -1,4 +1,5 @@
 use super::common::constants::{HEIGHT_NAME, WIDTH_NAME};
+use super::common::id::find_attribute;
 use super::common::iter::EasyIter;
 use super::common::unit::find_and_convert_to_px;
 use crate::node::{Node, RegularNodeType};
@@ -13,6 +14,32 @@ fn get_dimensions(attributes: &[OwnedAttribute]) -> (Option<f64>, Option<f64>) {
     )
 }
 
+fn convert_to_viewbox_in_attributes(mut attributes: Vec<OwnedAttribute>) -> Vec<OwnedAttribute> {
+    let (width, height) = get_dimensions(&attributes);
+
+    if find_attribute(&attributes, VIEWBOX_NAME).is_some() {
+        return attributes;
+    }
+
+    if let (Some(width), Some(height)) = (width, height) {
+        let viewbox_attributes = OwnedAttribute {
+            name: OwnedName {
+                local_name: VIEWBOX_NAME.into(),
+                namespace: None,
+                prefix: None,
+            },
+            value: format!("0 0 {width} {height}"),
+        };
+
+        attributes = attributes.filter_to_vec(|attr| {
+            let name = &attr.name.local_name;
+            name != WIDTH_NAME && name != HEIGHT_NAME
+        });
+        attributes.push(viewbox_attributes);
+    }
+    attributes
+}
+
 fn convert_to_viewbox_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
@@ -23,36 +50,15 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
                 | RegularNodeType::Symbol
                 | RegularNodeType::View),
             namespace,
-            mut attributes,
+            attributes,
             children,
             ..
-        } => {
-            let (width, height) = get_dimensions(&attributes);
-
-            if let (Some(width), Some(height)) = (width, height) {
-                let viewbox_attributes = OwnedAttribute {
-                    name: OwnedName {
-                        local_name: VIEWBOX_NAME.into(),
-                        namespace: None,
-                        prefix: None,
-                    },
-                    value: format!("0 0 {width} {height}"),
-                };
-
-                attributes = attributes.filter_to_vec(|attr| {
-                    let name = &attr.name.local_name;
-                    name != WIDTH_NAME && name != HEIGHT_NAME
-                });
-                attributes.push(viewbox_attributes);
-            }
-
-            Node::RegularNode {
-                node_type,
-                namespace,
-                attributes,
-                children: children.map_to_vec(convert_to_viewbox_from_node),
-            }
-        }
+        } => Node::RegularNode {
+            node_type,
+            namespace,
+            attributes: convert_to_viewbox_in_attributes(attributes),
+            children: children.map_to_vec(convert_to_viewbox_from_node),
+        },
         Node::RegularNode {
             node_type,
             namespace,
@@ -104,6 +110,21 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+        <ellipse rx="50" cx="100" ry="50" cy="50"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_convert_to_viewbox_already_exists,
+        convert_to_viewbox,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 200">
+        <ellipse rx="50" cx="100" ry="50" cy="50"/>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 200">
         <ellipse rx="50" cx="100" ry="50" cy="50"/>
         </svg>
         "#
