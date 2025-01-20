@@ -1,27 +1,23 @@
 use super::common::iter::EasyIter;
 use crate::node::Node;
 use anyhow::Result;
-use lazy_regex::regex_replace_all;
+use lazy_regex::{regex_replace, regex_replace_all};
 use xml::attribute::OwnedAttribute;
 
-fn round_floating_point_numbers_in_attribute(
-    mut attr: OwnedAttribute,
-    precision: u32,
-) -> OwnedAttribute {
+fn round_floats_in_attribute(mut attr: OwnedAttribute, precision: usize) -> OwnedAttribute {
     attr.value = regex_replace_all!(
         r"[+-]?\d*\.\d+([Ee]\d+)?",
         attr.value.as_str(),
         |float: &str, _| {
-            let mult = 10u32.pow(precision) as f64;
-            let rounded = (float.parse::<f64>().unwrap() * mult).round() / mult;
-            format!("{}", rounded)
+            let rounded = format!("{:.1$}", float.parse::<f64>().unwrap(), precision);
+            regex_replace!(r"\.?0*$", rounded.as_str(), "").into_owned()
         }
     )
     .into_owned();
     attr
 }
 
-fn round_floating_point_numbers_in_node(node: Node, precision: u32) -> Node {
+fn round_floats_in_node(node: Node, precision: usize) -> Node {
     match node {
         Node::RegularNode {
             node_type,
@@ -31,17 +27,15 @@ fn round_floating_point_numbers_in_node(node: Node, precision: u32) -> Node {
         } => Node::RegularNode {
             node_type,
             namespace,
-            attributes: attributes
-                .map_to_vec(|attr| round_floating_point_numbers_in_attribute(attr, precision)),
-            children: children
-                .map_to_vec(|child| round_floating_point_numbers_in_node(child, precision)),
+            attributes: attributes.map_to_vec(|attr| round_floats_in_attribute(attr, precision)),
+            children: children.map_to_vec(|child| round_floats_in_node(child, precision)),
         },
         other => other,
     }
 }
 
-pub fn round_floating_point_numbers(nodes: Vec<Node>, precision: u32) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(|node| round_floating_point_numbers_in_node(node, precision)))
+pub fn round_floats(nodes: Vec<Node>, precision: usize) -> Result<Vec<Node>> {
+    Ok(nodes.map_to_vec(|node| round_floats_in_node(node, precision)))
 }
 
 #[cfg(test)]
@@ -52,11 +46,11 @@ mod tests {
     use crate::writer::SVGWriter;
 
     fn test_round(nodes: Vec<Node>) -> Result<Vec<Node>> {
-        round_floating_point_numbers(nodes, 2)
+        round_floats(nodes, 2)
     }
 
     test_optimize!(
-        test_round_floating_point_numbers,
+        test_round_floats,
         test_round,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">

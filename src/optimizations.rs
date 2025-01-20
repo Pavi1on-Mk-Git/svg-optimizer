@@ -10,8 +10,8 @@ macro_rules! use_optimizations {
             use $optimization_name::$optimization_name;
         )*
 
-        mod round_floating_point_numbers;
-        use round_floating_point_numbers::round_floating_point_numbers;
+        mod round_floats;
+        use round_floats::round_floats;
 
         #[derive(clap::Parser)]
         pub struct Optimizations {
@@ -26,7 +26,7 @@ macro_rules! use_optimizations {
             )*
             #[arg(long)]
             #[doc = "Round floating point numbers to specified precision (disabled by default)"]
-            round_floating_point_numbers: Option<u32>,
+            round_floats: Option<usize>,
         }
 
         impl Optimizations {
@@ -37,8 +37,8 @@ macro_rules! use_optimizations {
                     }
                 )*
 
-                if let Some(precision) = self.round_floating_point_numbers {
-                    nodes = round_floating_point_numbers(nodes, precision)?;
+                if let Some(precision) = self.round_floats {
+                    nodes = round_floats(nodes, precision)?;
                 }
 
                 Ok(nodes)
