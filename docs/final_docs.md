@@ -55,4 +55,5 @@ Poza tym, ze względu na ograniczenia biblioteki `xml-rs` używanej przez nas do
 Dokumentacja użytkownika została zawarta w README.md.
 
 ## Dodatkowe informacje
-
+Language            Files        Lines         Code     Comments       Blanks
+Rust                   36         4001         3621            8          372
