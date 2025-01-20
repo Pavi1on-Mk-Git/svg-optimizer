@@ -1,4 +1,4 @@
-use regex::Regex;
+use lazy_regex::regex;
 use xml::attribute::OwnedAttribute;
 
 fn unit_to_multiplier(unit: &str) -> Option<f64> {
@@ -12,7 +12,7 @@ fn unit_to_multiplier(unit: &str) -> Option<f64> {
 }
 
 pub fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Option<f64> {
-    let match_val_and_unit: Regex = Regex::new(r"(.*?)([^\d\.]*)$").unwrap();
+    let match_val_and_unit = regex!(r"(.*?)([^\d\.]*)$");
 
     attributes
         .iter()

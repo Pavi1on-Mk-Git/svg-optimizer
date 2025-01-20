@@ -121,9 +121,9 @@ mod tests {
             vec!["abc.svg", "somedir/xd.svg", "abcd.svg"],
         );
         assert!(optimizer.output_file_names.is_empty());
-        assert!(!optimizer.optimizations.no_remove_comments);
-        assert!(optimizer.optimizations.no_remove_attribute_whitespace);
-        assert!(optimizer.optimizations.no_remove_useless_groups);
+        assert!(!optimizer.optimizations.no_remove_comments());
+        assert!(optimizer.optimizations.no_remove_attribute_whitespace());
+        assert!(optimizer.optimizations.no_remove_useless_groups());
 
         Ok(())
     }
@@ -153,9 +153,9 @@ mod tests {
                 .map(|file| file.as_os_str()),
             vec!["abc2.svg", "somedir_321/xd.svg", "abcd.svg"],
         );
-        assert!(optimizer.optimizations.no_remove_comments);
-        assert!(!optimizer.optimizations.no_remove_attribute_whitespace);
-        assert!(!optimizer.optimizations.no_remove_useless_groups);
+        assert!(optimizer.optimizations.no_remove_comments());
+        assert!(!optimizer.optimizations.no_remove_attribute_whitespace());
+        assert!(!optimizer.optimizations.no_remove_useless_groups());
 
         Ok(())
     }

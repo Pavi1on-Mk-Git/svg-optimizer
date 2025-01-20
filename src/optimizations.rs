@@ -7,20 +7,26 @@ macro_rules! use_optimizations {
     ($([$optimization_name:ident, $disable_flag_name:ident, $doc:literal,]),*) => {
         $(
             mod $optimization_name;
-            pub use $optimization_name::$optimization_name;
+            use $optimization_name::$optimization_name;
         )*
+
+        mod round_floating_point_numbers;
+        use round_floating_point_numbers::round_floating_point_numbers;
 
         #[derive(clap::Parser)]
         pub struct Optimizations {
             $(
                 #[arg(long)]
                 #[doc = $doc]
-                pub $optimization_name: bool,
+                $optimization_name: bool,
 
                 #[arg(long, conflicts_with = stringify!($optimization_name))]
                 #[doc = "Disable the optimization."]
-                pub $disable_flag_name: bool,
+                $disable_flag_name: bool,
             )*
+            #[arg(long)]
+            #[doc = "Round floating point numbers to specified precision (disabled by default)"]
+            round_floating_point_numbers: Option<u32>,
         }
 
         impl Optimizations {
@@ -31,8 +37,20 @@ macro_rules! use_optimizations {
                     }
                 )*
 
+                if let Some(precision) = self.round_floating_point_numbers {
+                    nodes = round_floating_point_numbers(nodes, precision)?;
+                }
+
                 Ok(nodes)
             }
+
+            $(
+                #[cfg(test)]
+                #[allow(dead_code)]
+                pub fn $disable_flag_name(&self) -> bool {
+                    self.$disable_flag_name
+                }
+            )*
         }
     };
 }
