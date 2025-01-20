@@ -1,18 +1,13 @@
-use super::common::iter::EasyIter;
+use super::common::{iter::EasyIter, unit::round_float};
 use crate::node::Node;
-use lazy_regex::{regex_replace, regex_replace_all};
+use lazy_regex::regex_replace_all;
 use xml::attribute::OwnedAttribute;
 
 fn round_floats_in_attribute(mut attr: OwnedAttribute, precision: usize) -> OwnedAttribute {
     attr.value = regex_replace_all!(
         r"[+-]?\d*\.\d+([Ee]\d+)?",
         attr.value.as_str(),
-        |float: &str, _| {
-            let rounded = format!("{:.1$}", float.parse::<f64>().unwrap(), precision);
-            let no_trailing_zeros = regex_replace!(r"\.?0*$", rounded.as_str(), "");
-            let no_leading_zeros = regex_replace!(r"(^|\D)0+([\d\.])", &no_trailing_zeros, "$1$2");
-            no_leading_zeros.into_owned()
-        }
+        |float: &str, _| round_float(float.parse::<f64>().unwrap(), precision)
     )
     .into_owned();
     attr

@@ -4,42 +4,54 @@ use anyhow::Result;
 pub mod common;
 
 macro_rules! use_optimizations {
-    ($([$optimization_name:ident, $disable_flag_name:ident, $doc:literal,]),*) => {
+    ([$([$regular_opt_name:ident, $disable_flag_name:ident, $regular_doc:literal,]),*],
+    [$([$precision_opt_name:ident, $precision_doc:literal,]),*]) => {
         $(
-            mod $optimization_name;
-            use $optimization_name::$optimization_name;
+            mod $regular_opt_name;
+            use $regular_opt_name::$regular_opt_name;
         )*
 
-        mod round_floats;
-        use round_floats::round_floats;
+        $(
+            mod $precision_opt_name;
+            use $precision_opt_name::$precision_opt_name;
+        )*
 
         #[derive(clap::Parser)]
         pub struct Optimizations {
             $(
                 #[arg(long)]
-                #[doc = $doc]
-                $optimization_name: bool,
+                #[doc = $regular_doc]
+                $regular_opt_name: bool,
 
-                #[arg(long, conflicts_with = stringify!($optimization_name))]
+                #[arg(long, conflicts_with = stringify!($regular_opt_name))]
                 #[doc = "Disable the optimization."]
                 $disable_flag_name: bool,
             )*
-            #[arg(long)]
-            #[doc = "Round floating point numbers to specified precision (disabled by default)"]
-            round_floats: Option<usize>,
+
+            $(
+                #[arg(long)]
+                #[doc = $precision_doc]
+                $precision_opt_name: bool,
+            )*
+
+            #[arg(short, long, default_value("3"))]
+            #[doc = "Desired precision for lossy optimizations."]
+            precision: usize,
         }
 
         impl Optimizations {
             pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
                 $(
-                    if self.$optimization_name || (default_all && !self.$disable_flag_name) {
-                        nodes = $optimization_name(nodes);
+                    if self.$regular_opt_name || (default_all && !self.$disable_flag_name) {
+                        nodes = $regular_opt_name(nodes);
                     }
                 )*
 
-                if let Some(precision) = self.round_floats {
-                    nodes = round_floats(nodes, precision);
-                }
+                $(
+                    if self.$precision_opt_name {
+                        nodes = $precision_opt_name(nodes, self.precision);
+                    }
+                )*
 
                 Ok(nodes)
             }
@@ -56,7 +68,7 @@ macro_rules! use_optimizations {
 }
 
 use_optimizations!(
-    [
+    [[
         remove_attribute_whitespace,
         no_remove_attribute_whitespace,
         "Remove excess whitespace from attributes.",
@@ -152,15 +164,16 @@ use_optimizations!(
         "Remove editor namespaces, elements and attributes.",
     ],
     [
-        merge_transforms,
-        no_merge_transforms,
-        "Merge transforms into a single matrix.",
-    ],
-    [
         merge_consecutive_paths,
         no_merge_consecutive_paths,
         "Merge consecutive paths if their attributes match.",
-    ]
+    ]], [[
+        round_floats,
+        "Round floating point numbers to specified precision (disabled by default).",
+    ], [
+        merge_transforms,
+        "Merge transform attribute components into one matrix (disabled by default).",
+    ]]
 );
 
 #[cfg(test)]

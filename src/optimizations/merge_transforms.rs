@@ -1,4 +1,6 @@
-use super::common::{constants::TRANSFORM_NAME, id_usage::find_attribute_mut, iter::EasyIter};
+use super::common::{
+    constants::TRANSFORM_NAME, id_usage::find_attribute_mut, iter::EasyIter, unit::round_float,
+};
 use crate::node::Node;
 use itertools::Itertools;
 use lazy_regex::regex;
@@ -79,19 +81,19 @@ fn string_to_matrix(matrix_string: &str) -> Option<Matrix3<f64>> {
     }
 }
 
-fn matrix_to_string(matrix: &Matrix3<f64>) -> String {
+fn matrix_to_string(matrix: &Matrix3<f64>, precision: usize) -> String {
     format!(
         "matrix({} {} {} {} {} {})",
-        matrix.index((0, 0)),
-        matrix.index((1, 0)),
-        matrix.index((0, 1)),
-        matrix.index((1, 1)),
-        matrix.index((0, 2)),
-        matrix.index((1, 2))
+        round_float(*matrix.index((0, 0)), precision),
+        round_float(*matrix.index((1, 0)), precision),
+        round_float(*matrix.index((0, 1)), precision),
+        round_float(*matrix.index((1, 1)), precision),
+        round_float(*matrix.index((0, 2)), precision),
+        round_float(*matrix.index((1, 2)), precision)
     )
 }
 
-fn merge_transform_attribute(transform_str: &str) -> String {
+fn merge_transform_attribute(transform_str: &str, precision: usize) -> String {
     let transform_string = transform_str.split_whitespace().join(" ");
     let mut result: Matrix3<f64> = Matrix3::identity();
 
@@ -106,10 +108,10 @@ fn merge_transform_attribute(transform_str: &str) -> String {
         }
     }
 
-    matrix_to_string(&result)
+    matrix_to_string(&result, precision)
 }
 
-fn merge_transforms_in_node(node: Node) -> Node {
+fn merge_transforms_in_node(node: Node, precision: usize) -> Node {
     match node {
         Node::RegularNode {
             node_type,
@@ -118,22 +120,22 @@ fn merge_transforms_in_node(node: Node) -> Node {
             children,
         } => {
             if let Some(transform) = find_attribute_mut(&mut attributes, TRANSFORM_NAME) {
-                *transform = merge_transform_attribute(transform);
+                *transform = merge_transform_attribute(transform, precision);
             }
 
             Node::RegularNode {
                 node_type,
                 namespace,
                 attributes,
-                children: merge_transforms(children),
+                children: merge_transforms(children, precision),
             }
         }
         other => other,
     }
 }
 
-pub fn merge_transforms(nodes: Vec<Node>) -> Vec<Node> {
-    nodes.map_to_vec(merge_transforms_in_node)
+pub fn merge_transforms(nodes: Vec<Node>, precision: usize) -> Vec<Node> {
+    nodes.map_to_vec(|node| merge_transforms_in_node(node, precision))
 }
 
 #[cfg(test)]
@@ -143,16 +145,20 @@ mod tests {
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
 
+    fn test_merge(nodes: Vec<Node>) -> Vec<Node> {
+        merge_transforms(nodes, 2)
+    }
+
     test_optimize!(
         test_merge_two_matrices,
-        merge_transforms,
+        test_merge,
         r##"<svg viewBox="-40 0 150 100">
-        <g transform="matrix(2 3 1 2 1 2) matrix(1 4 2 5 3 6)">
+        <g transform="translate(10 10) matrix(2 3 1 2 1 2) matrix(1 4 2 5 3 6)">
             <path d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z"/>
         </g>
         </svg>"##,
         r##"<svg viewBox="-40 0 150 100">
-        <g transform="matrix(6 11 9 16 13 23)">
+        <g transform="matrix(6 11 9 16 23 33)">
             <path d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z"/>
         </g>
         </svg>"##
