@@ -45,6 +45,7 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
         Node::RegularNode {
             node_type:
                 node_type @ (RegularNodeType::Marker
+                | RegularNodeType::Pattern
                 | RegularNodeType::Svg
                 | RegularNodeType::Symbol
                 | RegularNodeType::View),
