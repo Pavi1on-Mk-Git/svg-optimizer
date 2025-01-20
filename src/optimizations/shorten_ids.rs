@@ -14,9 +14,7 @@ struct IdGenerator {
 impl IdGenerator {
     fn new() -> Self {
         Self {
-            base_characters: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-                .chars()
-                .collect(),
+            base_characters: "ghijklmnopqrstuvwxyzGHIJKLMNOPQRSTUVWXYZ".chars().collect(),
             generated_ids: 0,
         }
     }
@@ -53,13 +51,25 @@ fn shorten_id_in_attribute(
         attribute.value = id_map[&attribute.value].clone();
     }
 
-    if attribute.name.local_name == HREF_NAME {
-        let (first, rest) = attribute.value.split_at(1);
-        if first == "#" {
-            if let Some(new_id) = id_map.get(rest) {
-                attribute.value = format!("#{new_id}");
+    match attribute.name.local_name.as_str() {
+        HREF_NAME => {
+            let (first, rest) = attribute.value.split_at(1);
+            if first == "#" {
+                if let Some(new_id) = id_map.get(rest) {
+                    attribute.value = format!("#{new_id}");
+                }
             }
         }
+        STYLE_NAME => {
+            for (id, new_id) in id_map {
+                if attribute.value.contains(&format!("url(#{id})")) {
+                    attribute.value = attribute
+                        .value
+                        .replace(&format!("url(#{id})"), &format!("url(#{new_id})"));
+                }
+            }
+        }
+        _ => {}
     }
     attribute
 }
@@ -109,7 +119,7 @@ fn shorten_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
 
 fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
     let ids = find_ids_for_subtree(nodes);
-    BTreeMap::from_iter(ids.into_iter().zip(IdGenerator::new()))
+    BTreeMap::from_iter(ids.into_iter().zip(IdGenerator::new())) // TODO Make sure that shortened id isn't the same as an id already present in the map
 }
 
 pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
@@ -126,15 +136,15 @@ mod tests {
 
     #[test]
     fn test_id_generation() {
-        let chars_size = 62;
+        let chars_size = 40;
         let mut gen = IdGenerator::new();
 
-        assert_eq!(gen.nth(5), Some("f".into()));
-        assert_eq!(gen.nth(chars_size - 1), Some("fa".into()));
-        assert_eq!(gen.nth(chars_size.pow(2)), Some("gaa".into()));
+        assert_eq!(gen.nth(5), Some("l".into()));
+        assert_eq!(gen.nth(chars_size - 1), Some("lg".into()));
+        assert_eq!(gen.nth(chars_size.pow(2)), Some("mgg".into()));
         assert_eq!(
             gen.nth(chars_size.pow(3) - chars_size - 1),
-            Some("g99".into())
+            Some("mZZ".into())
         );
     }
 
@@ -153,12 +163,12 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
-        <rect id="a" x="10" y="10" width="100" height="100">
-            <rect id="b" x="10" y="10" width="100" height="100"/>
+        <rect id="g" x="10" y="10" width="100" height="100">
+            <rect id="h" x="10" y="10" width="100" height="100"/>
         </rect>
-        <rect id="c" x="10" y="10" width="100" height="100"/>
-        <rect id="d" x="10" y="10" width="100" height="100"/>
-        <rect id="e" x="10" y="10" width="100" height="100"/>
+        <rect id="i" x="10" y="10" width="100" height="100"/>
+        <rect id="j" x="10" y="10" width="100" height="100"/>
+        <rect id="k" x="10" y="10" width="100" height="100"/>
         </svg>
         "#
     );
@@ -187,7 +197,7 @@ mod tests {
         r##"
         <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
         <style>
-            #a {
+            #g {
                 stroke: #000066;
                 fill: #00cc00;
             }
@@ -197,9 +207,9 @@ mod tests {
             }
         </style>
 
-        <use href="#a" x="10" fill="blue"/>
+        <use href="#g" x="10" fill="blue"/>
         <use href="#unused" x="10" fill="blue"/>
-        <rect id="a" x="10" y="10" width="100" height="100"/>
+        <rect id="g" x="10" y="10" width="100" height="100"/>
         </svg>
         "##
     );
@@ -231,7 +241,7 @@ mod tests {
         <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
         <style>
             <![CDATA[
-            #a {
+            #g {
                 stroke: #000066;
                 fill: #00cc00;
             }
@@ -242,9 +252,9 @@ mod tests {
             ]]>
         </style>
 
-        <use href="#a" x="10" fill="blue"/>
+        <use href="#g" x="10" fill="blue"/>
         <use href="#unused" x="10" fill="blue"/>
-        <rect id="a" x="10" y="10" width="100" height="100"/>
+        <rect id="g" x="10" y="10" width="100" height="100"/>
         </svg>
         "##
     );
