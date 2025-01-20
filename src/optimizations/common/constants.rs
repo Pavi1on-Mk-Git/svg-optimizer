@@ -5,3 +5,4 @@ pub const RY_NAME: &str = "ry";
 pub const R_NAME: &str = "r";
 pub const WIDTH_NAME: &str = "width";
 pub const HEIGHT_NAME: &str = "height";
+pub const VIEWBOX_NAME: &str = "viewBox";

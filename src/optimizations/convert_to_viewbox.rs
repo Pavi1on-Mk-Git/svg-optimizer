@@ -1,11 +1,10 @@
-use super::common::constants::{HEIGHT_NAME, WIDTH_NAME};
+use super::common::constants::{HEIGHT_NAME, VIEWBOX_NAME, WIDTH_NAME};
 use super::common::id::find_attribute;
 use super::common::iter::EasyIter;
 use super::common::unit::find_and_convert_to_px;
 use crate::node::{Node, RegularNodeType};
 use anyhow::Result;
 use xml::{attribute::OwnedAttribute, name::OwnedName};
-const VIEWBOX_NAME: &str = "viewBox";
 
 fn get_dimensions(attributes: &[OwnedAttribute]) -> (Option<f64>, Option<f64>) {
     (
@@ -14,12 +13,19 @@ fn get_dimensions(attributes: &[OwnedAttribute]) -> (Option<f64>, Option<f64>) {
     )
 }
 
-fn convert_to_viewbox_in_attributes(mut attributes: Vec<OwnedAttribute>) -> Vec<OwnedAttribute> {
-    let (width, height) = get_dimensions(&attributes);
+fn remove_dimensions(attributes: Vec<OwnedAttribute>) -> Vec<OwnedAttribute> {
+    attributes.filter_to_vec(|attr| {
+        let name = &attr.name.local_name;
+        name != WIDTH_NAME && name != HEIGHT_NAME
+    })
+}
 
+fn convert_to_viewbox_in_attributes(attributes: Vec<OwnedAttribute>) -> Vec<OwnedAttribute> {
     if find_attribute(&attributes, VIEWBOX_NAME).is_some() {
-        return attributes;
+        return remove_dimensions(attributes);
     }
+
+    let (width, height) = get_dimensions(&attributes);
 
     if let (Some(width), Some(height)) = (width, height) {
         let viewbox_attributes = OwnedAttribute {
@@ -31,29 +37,24 @@ fn convert_to_viewbox_in_attributes(mut attributes: Vec<OwnedAttribute>) -> Vec<
             value: format!("0 0 {width} {height}"),
         };
 
-        attributes = attributes.filter_to_vec(|attr| {
-            let name = &attr.name.local_name;
-            name != WIDTH_NAME && name != HEIGHT_NAME
-        });
-        attributes.push(viewbox_attributes);
+        let mut new_attributes = remove_dimensions(attributes);
+        new_attributes.push(viewbox_attributes);
+        new_attributes
+    } else {
+        attributes
     }
-    attributes
 }
 
 fn convert_to_viewbox_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
-            node_type:
-                node_type @ (RegularNodeType::Marker
-                | RegularNodeType::Svg
-                | RegularNodeType::Symbol
-                | RegularNodeType::View),
+            node_type: RegularNodeType::Svg,
             namespace,
             attributes,
             children,
             ..
         } => Node::RegularNode {
-            node_type,
+            node_type: RegularNodeType::Svg,
             namespace,
             attributes: convert_to_viewbox_in_attributes(attributes),
             children: children.map_to_vec(convert_to_viewbox_from_node),
@@ -123,7 +124,7 @@ mod tests {
         </svg>
         "#,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 200">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
         <ellipse rx="50" cx="100" ry="50" cy="50"/>
         </svg>
         "#
