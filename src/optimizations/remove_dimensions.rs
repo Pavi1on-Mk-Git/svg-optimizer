@@ -1,9 +1,8 @@
-use super::common::constants::{HEIGHT_NAME, VIEWBOX_NAME, WIDTH_NAME};
-use super::common::id::find_attribute;
-use super::common::iter::EasyIter;
-use super::common::unit::find_and_convert_to_px;
+use super::common::{
+    constants::*, id::find_attribute, iter::EasyIter, unit::find_and_convert_to_px,
+};
 use crate::node::{Node, RegularNodeType};
-use anyhow::Result;
+use itertools::Itertools;
 use xml::attribute::OwnedAttribute;
 
 fn get_dimensions(attributes: &[OwnedAttribute]) -> (Option<f64>, Option<f64>) {
@@ -20,7 +19,7 @@ fn remove_dimensions_in_attributes(attributes: Vec<OwnedAttribute>) -> Vec<Owned
     ) {
         let expected_viewbox = format!("0 0 {width} {height}");
 
-        if expected_viewbox == viewbox {
+        if expected_viewbox == viewbox.split_whitespace().join(" ") {
             return attributes.filter_to_vec(|attr| {
                 let name = &attr.name.local_name;
                 name != WIDTH_NAME && name != HEIGHT_NAME
@@ -30,7 +29,7 @@ fn remove_dimensions_in_attributes(attributes: Vec<OwnedAttribute>) -> Vec<Owned
     attributes
 }
 
-fn convert_to_viewbox_from_node(node: Node) -> Node {
+fn remove_dimensions_from_node(node: Node) -> Node {
     match node {
         Node::RegularNode {
             node_type: RegularNodeType::Svg,
@@ -42,7 +41,7 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
             node_type: RegularNodeType::Svg,
             namespace,
             attributes: remove_dimensions_in_attributes(attributes),
-            children: children.map_to_vec(convert_to_viewbox_from_node),
+            children: remove_dimensions(children),
         },
         Node::RegularNode {
             node_type,
@@ -53,14 +52,14 @@ fn convert_to_viewbox_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map_to_vec(convert_to_viewbox_from_node),
+            children: remove_dimensions(children),
         },
         other => other,
     }
 }
 
-pub fn remove_dimensions(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(convert_to_viewbox_from_node))
+pub fn remove_dimensions(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.map_to_vec(remove_dimensions_from_node)
 }
 
 #[cfg(test)]
@@ -74,12 +73,12 @@ mod tests {
         test_remove_dimensions,
         remove_dimensions,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="  0  0 200 200  ">
         <ellipse rx="50" cx="100" ry="50" cy="50"/>
         </svg>
         "#,
         r#"
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="  0  0 200 200  ">
         <ellipse rx="50" cx="100" ry="50" cy="50"/>
         </svg>
         "#

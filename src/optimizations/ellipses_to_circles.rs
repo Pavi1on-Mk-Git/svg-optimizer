@@ -1,7 +1,8 @@
-use super::common::constants::{RX_NAME, RY_NAME, R_NAME};
-use super::common::iter::EasyIter;
+use super::common::{
+    constants::{RX_NAME, RY_NAME, R_NAME},
+    iter::EasyIter,
+};
 use crate::node::{Node, NodeNamespace, RegularNodeType};
-use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 use xml::name::OwnedName;
 
@@ -23,7 +24,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map_to_vec(ellipses_to_circles_from_node),
+            children: ellipses_to_circles(children),
         },
         childless_node => childless_node,
     }
@@ -76,8 +77,8 @@ fn get_new_node(
     }
 }
 
-pub fn ellipses_to_circles(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(ellipses_to_circles_from_node))
+pub fn ellipses_to_circles(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.map_to_vec(ellipses_to_circles_from_node)
 }
 
 #[cfg(test)]

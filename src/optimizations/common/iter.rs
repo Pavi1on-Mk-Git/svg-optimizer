@@ -1,16 +1,3 @@
-// use itertools::Itertools;
-
-// TODO: potentially remove if not needed
-// pub fn _apply_result<T, F>(nodes: Vec<T>, func: F) -> Result<Vec<T>>
-// where
-//     F: Fn(T) -> Result<Option<T>>,
-// {
-//     nodes
-//         .into_iter()
-//         .map(func)
-//         .process_results(|iter| iter.flatten().collect())
-// }
-
 pub trait EasyIter<T> {
     fn filter_to_vec<F>(self, func: F) -> Vec<T>
     where

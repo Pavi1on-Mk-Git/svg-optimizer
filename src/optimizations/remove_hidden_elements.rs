@@ -1,17 +1,6 @@
-use super::common::{
-    constants::{HEIGHT_NAME, RX_NAME, RY_NAME, R_NAME, WIDTH_NAME},
-    iter::EasyIter,
-    unit::find_and_convert_to_px,
-};
+use super::common::{constants::*, iter::EasyIter, unit::find_and_convert_to_px};
 use crate::node::{Node, RegularNodeType};
-use anyhow::Result;
 use xml::attribute::OwnedAttribute;
-
-const DISPLAY_NAME: &str = "display";
-const NONE_VAL: &str = "none";
-const OPACITY_NAME: &str = "opacity";
-const PATH_DATA_NAME: &str = "d";
-const POINTS_NAME: &str = "points";
 
 fn is_no_display(attr: &OwnedAttribute) -> bool {
     attr.name.local_name == DISPLAY_NAME && attr.value == NONE_VAL
@@ -115,14 +104,14 @@ fn remove_hidden_elements_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map_to_vec(remove_hidden_elements_from_node),
+            children: remove_hidden_elements(children),
         },
         other => other,
     })
 }
 
-pub fn remove_hidden_elements(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map_to_vec(remove_hidden_elements_from_node))
+pub fn remove_hidden_elements(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.filter_map_to_vec(remove_hidden_elements_from_node)
 }
 
 #[cfg(test)]

@@ -1,8 +1,5 @@
-use super::common::constants::*;
-use super::common::id::find_ids_for_subtree;
-use super::common::iter::EasyIter;
+use super::common::{constants::*, id::find_ids_for_subtree, iter::EasyIter};
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
-use anyhow::Result;
 use itertools::Itertools;
 use std::collections::BTreeMap;
 use xml::attribute::OwnedAttribute;
@@ -136,9 +133,9 @@ fn make_id_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
     )
 }
 
-pub fn shorten_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
+pub fn shorten_ids(nodes: Vec<Node>) -> Vec<Node> {
     let id_map = make_id_map(&nodes);
-    Ok(nodes.map_to_vec(|node| shorten_ids_for_node(node, &id_map)))
+    nodes.map_to_vec(|node| shorten_ids_for_node(node, &id_map))
 }
 
 #[cfg(test)]

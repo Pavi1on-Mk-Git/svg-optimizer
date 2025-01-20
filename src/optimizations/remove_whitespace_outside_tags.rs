@@ -1,24 +1,22 @@
 use super::common::iter::EasyIter;
-use crate::node::Node::RegularNode;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
-use anyhow::Result;
 
 fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
     match node {
-        text @ RegularNode {
+        text @ Node::RegularNode {
             node_type: RegularNodeType::Text,
             ..
         } => Some(text),
-        RegularNode {
+        Node::RegularNode {
             node_type,
             namespace,
             attributes,
             children,
-        } => Some(RegularNode {
+        } => Some(Node::RegularNode {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map_to_vec(remove_whitespace_outside_tags_from_node),
+            children: remove_whitespace_outside_tags(children),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(text, is_cdata),
@@ -30,8 +28,8 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map_to_vec(remove_whitespace_outside_tags_from_node))
+pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.filter_map_to_vec(remove_whitespace_outside_tags_from_node)
 }
 
 #[cfg(test)]

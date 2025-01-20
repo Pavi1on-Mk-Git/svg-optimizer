@@ -12,7 +12,7 @@ pub mod test {
                 let mut parser = Parser::new($test_str.as_bytes())?;
                 let nodes = parser.parse_document()?;
 
-                let nodes = $tested_fn(nodes)?;
+                let nodes = $tested_fn(nodes);
 
                 let buffer = Vec::new();
                 let mut writer = SVGWriter::new(buffer);

@@ -1,6 +1,5 @@
 use super::common::iter::EasyIter;
 use crate::node::Node;
-use anyhow::Result;
 
 fn sort_attributes_from_node(node: Node) -> Node {
     match node {
@@ -15,15 +14,15 @@ fn sort_attributes_from_node(node: Node) -> Node {
                 node_type,
                 namespace,
                 attributes,
-                children: children.map_to_vec(sort_attributes_from_node),
+                children: sort_attributes(children),
             }
         }
         other => other,
     }
 }
 
-pub fn sort_attributes(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(sort_attributes_from_node))
+pub fn sort_attributes(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.map_to_vec(sort_attributes_from_node)
 }
 
 #[cfg(test)]

@@ -1,6 +1,5 @@
 use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node};
-use anyhow::Result;
 
 fn remove_comments_from_node(node: Node) -> Option<Node> {
     match node {
@@ -13,7 +12,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map_to_vec(remove_comments_from_node),
+            children: remove_comments(children),
         }),
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Comment(_),
@@ -22,8 +21,8 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_comments(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map_to_vec(remove_comments_from_node))
+pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.filter_map_to_vec(remove_comments_from_node)
 }
 
 #[cfg(test)]
@@ -38,7 +37,8 @@ mod tests {
         remove_comments,
         r#"
         <!-- comment --><svg xmlns="http://www.w3.org/2000/svg">
-        <!-- comment --></svg><!-- comment -->
+        <!-- comment
+         --></svg><!-- comment -->
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">

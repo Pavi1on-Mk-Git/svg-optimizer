@@ -1,6 +1,5 @@
 use super::common::iter::EasyIter;
 use crate::node::Node;
-use anyhow::Result;
 
 fn remove_empty_attributes_from_node(node: Node) -> Node {
     match node {
@@ -13,14 +12,14 @@ fn remove_empty_attributes_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes: attributes.filter_to_vec(|attribute| !attribute.value.is_empty()),
-            children: children.map_to_vec(remove_empty_attributes_from_node),
+            children: remove_empty_attributes(children),
         },
         other => other,
     }
 }
 
-pub fn remove_empty_attributes(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(remove_empty_attributes_from_node))
+pub fn remove_empty_attributes(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.map_to_vec(remove_empty_attributes_from_node)
 }
 
 #[cfg(test)]

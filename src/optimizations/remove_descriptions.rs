@@ -1,6 +1,5 @@
 use super::common::iter::EasyIter;
 use crate::node::{Node, RegularNodeType};
-use anyhow::Result;
 
 fn remove_descriptions_from_node(node: Node) -> Option<Node> {
     match node {
@@ -18,14 +17,14 @@ fn remove_descriptions_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map_to_vec(remove_descriptions_from_node),
+            children: remove_descriptions(children),
         }),
         other => Some(other),
     }
 }
 
-pub fn remove_descriptions(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map_to_vec(remove_descriptions_from_node))
+pub fn remove_descriptions(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.filter_map_to_vec(remove_descriptions_from_node)
 }
 
 #[cfg(test)]

@@ -1,10 +1,18 @@
-use super::common::iter::EasyIter;
+use super::common::{constants::*, iter::EasyIter};
 use crate::node::{Node, RegularNodeType};
-use anyhow::Result;
 use xml::attribute::OwnedAttribute;
 
 pub const NO_GROUP_ATTRIBUTES: [&str; 10] = [
-    "cx", "cy", "height", "width", "x", "y", "r", "rx", "ry", "d",
+    CX_NAME,
+    CY_NAME,
+    HEIGHT_NAME,
+    WIDTH_NAME,
+    X_NAME,
+    Y_NAME,
+    R_NAME,
+    RX_NAME,
+    RY_NAME,
+    PATH_DATA_NAME,
 ];
 
 fn find_common_attributes(nodes: &[Node]) -> Vec<OwnedAttribute> {
@@ -75,14 +83,14 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             node_type,
             namespace,
             attributes,
-            children: children.map_to_vec(extract_common_attributes_from_node),
+            children: extract_common_attributes(children),
         },
         other => other,
     }
 }
 
-pub fn extract_common_attributes(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.map_to_vec(extract_common_attributes_from_node))
+pub fn extract_common_attributes(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.map_to_vec(extract_common_attributes_from_node)
 }
 
 #[cfg(test)]

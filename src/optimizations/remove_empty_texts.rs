@@ -1,6 +1,5 @@
 use super::common::iter::EasyIter;
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
-use anyhow::Result;
 
 fn contains_only_whitespace(node: &Node) -> bool {
     if let Node::ChildlessNode {
@@ -21,15 +20,10 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
             attributes,
             children,
         } => {
-            let new_children: Vec<Node> = children.filter_map_to_vec(remove_empty_texts_from_node);
+            let new_children: Vec<Node> = remove_empty_texts(children);
+            let should_retain = !new_children.iter().all(contains_only_whitespace);
 
-            let non_whitespace_children: Vec<&Node> =
-                std::iter::Iterator::filter(new_children.iter(), |child| {
-                    !contains_only_whitespace(child)
-                })
-                .collect();
-
-            (!non_whitespace_children.is_empty()).then_some(Node::RegularNode {
+            should_retain.then_some(Node::RegularNode {
                 node_type,
                 namespace,
                 attributes,
@@ -45,14 +39,14 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
             node_type,
             namespace,
             attributes,
-            children: children.filter_map_to_vec(remove_empty_texts_from_node),
+            children: remove_empty_texts(children),
         }),
         other => Some(other),
     }
 }
 
-pub fn remove_empty_texts(nodes: Vec<Node>) -> Result<Vec<Node>> {
-    Ok(nodes.filter_map_to_vec(remove_empty_texts_from_node))
+pub fn remove_empty_texts(nodes: Vec<Node>) -> Vec<Node> {
+    nodes.filter_map_to_vec(remove_empty_texts_from_node)
 }
 
 #[cfg(test)]

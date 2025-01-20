@@ -33,12 +33,12 @@ macro_rules! use_optimizations {
             pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Result<Vec<Node>> {
                 $(
                     if self.$optimization_name || (default_all && !self.$disable_flag_name) {
-                        nodes = $optimization_name(nodes)?;
+                        nodes = $optimization_name(nodes);
                     }
                 )*
 
                 if let Some(precision) = self.round_floats {
-                    nodes = round_floats(nodes, precision)?;
+                    nodes = round_floats(nodes, precision);
                 }
 
                 Ok(nodes)
@@ -149,10 +149,9 @@ pub mod test {
     use crate::node::Node;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
-    use anyhow::Result;
 
-    fn identity(nodes: Vec<Node>) -> Result<Vec<Node>> {
-        Ok(nodes)
+    fn identity(nodes: Vec<Node>) -> Vec<Node> {
+        nodes
     }
 
     test_optimize!(
@@ -168,5 +167,5 @@ pub mod test {
         <g fill="white" stroke="green" stroke-width="5"><circle cx="40" cy="40" r="25"/></g>
         <g><g/></g></svg>
         "#
-    );
+    ); // TODO: test DOCTYPE perhaps also xml
 }

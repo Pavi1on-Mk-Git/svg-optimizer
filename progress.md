@@ -1,7 +1,7 @@
 - ~~zmiana nazw `id` na minimalnej długości, usuwanie niepotrzebnych~~
 - ~~usuwanie znaków nowej linii i nadmiarowych spacji z atrybutów~~
 - ~~usuwanie `enable-background` w przypadku gdy odpowiada wymiarami wymiarom w tagu `svg` - nieimplementowane, usunięte~~
-- zaokrąglanie liczb zmiennoprzecinkowych do określonej precyzji
+- ~~zaokrąglanie liczb zmiennoprzecinkowych do określonej precyzji~~
 - ~~redukowanie niepotrzebnych grup~~
 - ~~konwertowanie elips będących kołami w koła~~
 - konwertowanie jednopunktowych gradientów w czysty kolor

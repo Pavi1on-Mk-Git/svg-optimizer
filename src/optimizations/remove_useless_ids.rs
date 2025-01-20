@@ -1,8 +1,5 @@
-use super::common::constants::*;
-use super::common::id::make_id_usage_map;
-use super::common::iter::EasyIter;
+use super::common::{constants::*, id::make_id_usage_map, iter::EasyIter};
 use crate::node::Node;
-use anyhow::Result;
 use std::collections::BTreeMap;
 use xml::attribute::OwnedAttribute;
 
@@ -31,9 +28,9 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
     }
 }
 
-pub fn remove_useless_ids(nodes: Vec<Node>) -> Result<Vec<Node>> {
+pub fn remove_useless_ids(nodes: Vec<Node>) -> Vec<Node> {
     let id_usage_map = make_id_usage_map(&nodes);
-    Ok(nodes.map_to_vec(|node| remove_useless_ids_for_node(node, &id_usage_map)))
+    nodes.map_to_vec(|node| remove_useless_ids_for_node(node, &id_usage_map))
 }
 
 #[cfg(test)]
