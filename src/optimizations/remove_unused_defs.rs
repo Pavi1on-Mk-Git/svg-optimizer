@@ -1,4 +1,4 @@
-use super::common::{constants::*, id::make_id_usage_map, iter::EasyIter};
+use super::common::{constants::*, id_usage::make_id_usage_map, iter::EasyIter};
 use crate::node::{Node, RegularNodeType};
 use std::collections::BTreeMap;
 

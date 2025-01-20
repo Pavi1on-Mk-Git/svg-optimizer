@@ -1,7 +1,5 @@
 use super::constants::*;
-use crate::node::ChildlessNodeType;
-use crate::node::Node;
-use crate::node::RegularNodeType;
+use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use std::collections::BTreeMap;
 use std::iter::repeat;
 use xml::attribute::OwnedAttribute;

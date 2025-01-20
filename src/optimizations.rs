@@ -140,6 +140,11 @@ use_optimizations!(
         remove_useless_stroke_and_fill,
         no_remove_useless_stroke_and_fill,
         "Remove fill and stroke attributes which would not be rendered.",
+    ],
+    [
+        merge_identical_paths,
+        no_merge_identical_paths,
+        "Replace identical paths with <use>s of a single path.",
     ]
 );
 
