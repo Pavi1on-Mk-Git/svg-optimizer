@@ -5,7 +5,6 @@ use super::common::{
 };
 use crate::node::{Node, RegularNodeType};
 use itertools::Either;
-use lazy_regex::regex_replace;
 use xml::attribute::OwnedAttribute;
 use Either::{Left, Right};
 
@@ -50,7 +49,7 @@ fn merge_path_data(fst_attrs: &[OwnedAttribute], snd_attrs: &mut [OwnedAttribute
         *snd_path_data = format!(
             "{} {}",
             fst_path_data.trim_end(),
-            regex_replace!(r"^m", snd_path_data.trim_start(), "M")
+            snd_path_data.trim_start()
         );
     }
 }
