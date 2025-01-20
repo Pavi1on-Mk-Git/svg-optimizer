@@ -14,5 +14,8 @@ pub const DISPLAY_NAME: &str = "display";
 pub const OPACITY_NAME: &str = "opacity";
 pub const PATH_DATA_NAME: &str = "d";
 pub const POINTS_NAME: &str = "points";
-
 pub const NONE_VAL: &str = "none";
+pub const STROKE_OPACITY_NAME: &str = "stroke-opacity";
+pub const STROKE_WIDTH_NAME: &str = "stroke-width";
+pub const FILL_NAME: &str = "fill";
+pub const FILL_OPACITY_NAME: &str = "fill-opacity";

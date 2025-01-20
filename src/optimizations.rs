@@ -135,6 +135,11 @@ use_optimizations!(
         remove_hidden_elements,
         no_remove_hidden_elements,
         "Remove elements which would not be rendered.",
+    ],
+    [
+        remove_useless_stroke_and_fill,
+        no_remove_useless_stroke_and_fill,
+        "Remove fill and stroke attributes which would not be rendered.",
     ]
 );
 
