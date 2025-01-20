@@ -95,14 +95,18 @@ fn matrix_to_string(matrix: &Matrix3<f64>, precision: usize) -> String {
 
 fn merge_transform_attribute(transform_str: &str, precision: usize) -> String {
     let transform_string = transform_str.split_whitespace().join(" ");
-    let mut result: Matrix3<f64> = Matrix3::identity();
-
-    for transform in transform_string
+    let transforms: Vec<&str> = transform_string
         .split(")")
         .filter(|substring| !substring.trim().is_empty())
-    {
+        .collect();
+
+    if transforms.len() <= 1 {
+        return transform_str.into();
+    }
+
+    let mut result: Matrix3<f64> = Matrix3::identity();
+    for transform in transforms {
         if let Some(transform) = string_to_matrix(transform) {
-            println!("{:?}", transform);
             result *= transform;
         } else {
             return transform_str.into();

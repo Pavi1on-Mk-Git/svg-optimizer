@@ -30,7 +30,6 @@ pub fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Opti
 }
 
 pub fn round_float(number: f64, precision: usize) -> String {
-    println!("{} {}", number, precision);
     let rounded = format!("{:.1$}", number, precision);
     let rounded = regex_replace!(r"(\.\d*?)0*$", rounded.as_str(), "$1");
     let rounded = regex_replace!(r"\.$", &rounded, "");
@@ -39,7 +38,6 @@ pub fn round_float(number: f64, precision: usize) -> String {
     if rounded == "-0" {
         rounded = "0".into();
     }
-    println!("{}", rounded);
     rounded.into_owned()
 }
 
