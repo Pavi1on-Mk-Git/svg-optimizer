@@ -23,5 +23,5 @@
 - usuwanie nieużywanych przestrzeni nazw
 - ~~usuwanie nieużywanych definicji~~
 - ~~usuwanie bezużytecznych atrybutów `stroke` i `fill`~~
-- zamiana identycznych ścieżek na `<use>` tej samej ścieżki
+- ~~zamiana identycznych ścieżek na `<use>` tej samej ścieżki~~
 - ~~sortowanie atrybutów dla lepszej kompresji~~

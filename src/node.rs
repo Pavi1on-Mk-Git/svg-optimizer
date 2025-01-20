@@ -4,14 +4,24 @@ use xml::name::OwnedName;
 use xml::namespace::Namespace;
 use xml::reader::XmlEvent;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct NodeNamespace {
     pub parent_namespace: Option<String>,
     pub prefix: Option<String>,
     pub element_namespace: Namespace,
 }
 
-#[derive(Debug)]
+impl NodeNamespace {
+    pub fn empty() -> Self {
+        Self {
+            parent_namespace: None,
+            prefix: None,
+            element_namespace: Namespace::empty(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Node {
     RegularNode {
         node_type: RegularNodeType,
@@ -49,7 +59,7 @@ impl RegularNodeType {
 macro_rules! conversions {
     ($([$node_type:ident, $name:literal]),*) => {
 
-        #[derive(Debug, PartialEq, Eq)]
+        #[derive(Debug, PartialEq, Eq, Clone)]
         pub enum RegularNodeType {
             Unknown(String),
             $($node_type,)*
@@ -157,7 +167,7 @@ conversions!(
     [View, "view"]
 );
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ChildlessNodeType {
     ProcessingInstruction(String, Option<String>),
     Comment(String),

@@ -1,4 +1,4 @@
-use super::id::find_attribute;
+use super::id_usage::find_attribute;
 use lazy_regex::regex;
 use xml::attribute::OwnedAttribute;
 
@@ -26,5 +26,5 @@ pub fn convert_to_px(value: &str) -> Option<f64> {
 }
 
 pub fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Option<f64> {
-    find_attribute(attributes, name).and_then(|value| convert_to_px(&value))
+    find_attribute(attributes, name).and_then(|value| convert_to_px(value))
 }

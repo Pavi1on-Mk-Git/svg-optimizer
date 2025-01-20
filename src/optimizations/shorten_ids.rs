@@ -1,7 +1,6 @@
 use super::common::{
-    id_usage::find_ids_for_subtree,
-    iter::EasyIter,
-    replace_ids::{replace_ids, IdGenerator},
+    id_generator::IdGenerator, id_usage::find_ids_for_subtree, iter::EasyIter,
+    replace_ids::replace_ids,
 };
 use crate::node::Node;
 use itertools::Itertools;
@@ -19,7 +18,7 @@ fn make_shorten_ids_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
     BTreeMap::from_iter(
         ids.clone()
             .into_iter()
-            .zip(IdGenerator::new().filter(|id| !ids.contains(id))),
+            .zip(IdGenerator::new(vec![]).filter(|id| !ids.contains(id))),
     )
 }
 
@@ -34,20 +33,6 @@ mod tests {
     use crate::optimizations::common::test::test_optimize;
     use crate::parser::Parser;
     use crate::writer::SVGWriter;
-
-    #[test]
-    fn test_id_generation() {
-        let chars_size = 40;
-        let mut gen = IdGenerator::new();
-
-        assert_eq!(gen.nth(5), Some("l".into()));
-        assert_eq!(gen.nth(chars_size - 1), Some("lg".into()));
-        assert_eq!(gen.nth(chars_size.pow(2)), Some("mgg".into()));
-        assert_eq!(
-            gen.nth(chars_size.pow(3) - chars_size - 1),
-            Some("mZZ".into())
-        );
-    }
 
     test_optimize!(
         test_shorten_ids_with_new_id_existing,
