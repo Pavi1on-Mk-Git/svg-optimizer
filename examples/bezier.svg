@@ -1,0 +1,6 @@
+<svg height="1000" width="1000" xmlns="http://www.w3.org/2000/svg">
+<path d="M 100 350 l 150 -300" stroke="red" stroke-width="4" fill="none"/>
+<path d="M 250 50 l 150 300" stroke="red" stroke-width="4" fill="none"/>
+<path d="M 175 200 l 150 0" stroke="red" stroke-width="4" fill="none"/>
+<path d="M 100 350 q 150 -300 300 0" stroke="red" stroke-width="4" fill="none"/>
+</svg>

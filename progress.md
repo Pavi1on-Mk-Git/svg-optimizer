@@ -7,7 +7,7 @@
 - konwertowanie jednopunktowych gradientów w czysty kolor
 - łączenie transformacji w pojedynczą macierz
 - aplikowanie transformacji na ścieżki
-- łączenie ścieżek
+- ~~łączenie ścieżek~~
 - łączenie styli
 - ~~wyłączanie wspólnych atrybutów elementów grupy do atrybutów grupy~~
 - ~~usuwanie komentarzy~~

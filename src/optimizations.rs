@@ -155,6 +155,11 @@ use_optimizations!(
         merge_transforms,
         no_merge_transforms,
         "Merge transforms into a single matrix.",
+    ],
+    [
+        merge_consecutive_paths,
+        no_merge_consecutive_paths,
+        "Merge consecutive paths if their attributes match.",
     ]
 );
 

@@ -19,5 +19,5 @@ pub const STROKE_WIDTH_NAME: &str = "stroke-width";
 pub const FILL_NAME: &str = "fill";
 pub const FILL_OPACITY_NAME: &str = "fill-opacity";
 pub const TRANSFORM_NAME: &str = "transform";
-
 pub const NONE_VAL: &str = "none";
+pub const PATH_LENGTH_NAME: &str = "pathLength";
