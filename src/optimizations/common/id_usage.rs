@@ -4,7 +4,6 @@ use std::collections::BTreeMap;
 use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
 
-// TODO: maybe move this elsewhere?
 pub fn find_attribute<'a>(attributes: &'a [OwnedAttribute], name: &str) -> Option<&'a String> {
     attributes
         .iter()

@@ -55,5 +55,5 @@ Poza tym, ze względu na ograniczenia biblioteki `xml-rs` używanej przez nas do
 Dokumentacja użytkownika została zawarta w README.md.
 
 ## Dodatkowe informacje
-Language            Files        Lines         Code     Comments       Blanks
-Rust                   36         4001         3621            8          372
+
+Liczba linii kodu wynosi 4001. Liczba testów wynosi 63. Pokrycie kodu testami wynosi 91.28%. Liczba godzin poświęconych na projekt wynosi w sumie około 100.

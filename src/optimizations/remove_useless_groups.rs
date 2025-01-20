@@ -72,7 +72,7 @@ fn collapse_group(
     {
         Some(Node::RegularNode {
             node_type,
-            namespace, //TODO Check if it needs merging of namespaces
+            namespace,
             attributes: merge_attributes(group_attributes, attributes),
             children,
         })
