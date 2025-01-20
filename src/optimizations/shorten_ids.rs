@@ -63,7 +63,7 @@ fn shorten_id_in_attribute(
                 }
             }
         }
-        STYLE_NAME => {
+        _ => {
             for (id, new_id) in id_map {
                 if attribute.value.contains(&format!("url(#{id})")) {
                     attribute.value = attribute
@@ -72,7 +72,6 @@ fn shorten_id_in_attribute(
                 }
             }
         }
-        _ => {}
     }
     attribute
 }
@@ -295,6 +294,35 @@ mod tests {
 
         <use href="#aacc00" x="10" fill="blue"/>
         <rect id="aacc00" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "##
+    );
+
+    test_optimize!(
+        test_shorten_id_used_in_attribute_via_url,
+        shorten_ids,
+        r##"
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+            <linearGradient id="grad">
+                <stop stop-color="#9a9582" offset="0"/>
+                <stop stop-color="#adaa9f" offset="1"/>
+            </linearGradient>
+        </defs>
+
+        <rect fill="url(#grad)" x="10" y="10" width="100" height="100"/>
+        </svg>
+        "##,
+        r##"
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+            <linearGradient id="g">
+                <stop stop-color="#9a9582" offset="0"/>
+                <stop stop-color="#adaa9f" offset="1"/>
+            </linearGradient>
+        </defs>
+
+        <rect fill="url(#g)" x="10" y="10" width="100" height="100"/>
         </svg>
         "##
     );
