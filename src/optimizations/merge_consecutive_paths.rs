@@ -47,7 +47,7 @@ fn merge_path_data(fst_attrs: &[OwnedAttribute], snd_attrs: &mut [OwnedAttribute
 
     if let (Some(fst_path_data), Some(snd_path_data)) = (fst_path_data, snd_path_data) {
         *snd_path_data = format!(
-            "{} {}",
+            "{}M 0 0{}",
             fst_path_data.trim_end(),
             snd_path_data.trim_start()
         );
