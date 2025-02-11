@@ -30,7 +30,7 @@ pub fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Opti
 }
 
 pub fn round_float(number: f64, precision: usize) -> String {
-    let rounded = format!("{:.1$}", number, precision);
+    let rounded = format!("{number:.precision$}");
     let rounded = regex_replace!(r"(\.\d*?)0*$", rounded.as_str(), "$1");
     let rounded = regex_replace!(r"\.$", &rounded, "");
     let mut rounded = regex_replace!(r"(^|\D)0\.", &rounded, "$1.").to_owned();
@@ -47,10 +47,10 @@ mod tests {
 
     #[test]
     fn test_rounding() {
-        assert_eq!(round_float(10000.1234567, 0), "10000");
-        assert_eq!(round_float(10000.1234567, 4), "10000.1235");
-        assert_eq!(round_float(1.0729712433664405, 3), "1.073");
+        assert_eq!(round_float(10_000.123_456_7, 0), "10000");
+        assert_eq!(round_float(10_000.123_456_7, 4), "10000.1235");
+        assert_eq!(round_float(1.072_971_243_366_440_5, 3), "1.073");
         assert_eq!(round_float(-0.00001, 3), "0");
-        assert_eq!(round_float(-0.0729712433664405, 2), "-.07");
+        assert_eq!(round_float(-0.072_971_243_366_440_5, 2), "-.07");
     }
 }

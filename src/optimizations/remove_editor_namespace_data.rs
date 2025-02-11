@@ -21,8 +21,7 @@ fn has_editor_namespace_data(attr: &OwnedAttribute) -> bool {
     attr.name
         .prefix
         .as_ref()
-        .map(|prefix| ALLOWED_NAMESPACES.contains(&prefix.as_str()))
-        .unwrap_or(true)
+        .map_or(true, |prefix| ALLOWED_NAMESPACES.contains(&prefix.as_str()))
 }
 
 fn remove_editor_namespace_data_from_node(node: Node) -> Option<Node> {
@@ -80,10 +79,10 @@ mod tests {
         inkscape:current-layer="g4" />
         </svg>
         "##,
-        r##"
+        r#"
         <svg xmlns="http://www.w3.org/2000/svg">
         <marker orient="auto" refY="0.0" refX="0.0" id="Arrow2Lend" style="overflow:visible;"/>
         </svg>
-        "##
+        "#
     );
 }

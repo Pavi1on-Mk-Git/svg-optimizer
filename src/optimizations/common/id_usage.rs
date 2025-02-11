@@ -1,4 +1,4 @@
-use super::constants::*;
+use super::constants::{HREF_NAME, ID_NAME};
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use std::collections::BTreeMap;
 use std::iter::repeat;
@@ -99,7 +99,7 @@ fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
 
 pub fn make_id_usage_map(nodes: &Vec<Node>) -> BTreeMap<String, bool> {
     let ids = find_ids_for_subtree(nodes);
-    let mut id_usage_map = BTreeMap::from_iter(ids.into_iter().zip(repeat(false)));
+    let mut id_usage_map = ids.into_iter().zip(repeat(false)).collect();
 
     nodes
         .iter()

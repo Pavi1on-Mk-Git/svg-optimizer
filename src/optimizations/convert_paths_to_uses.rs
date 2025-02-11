@@ -59,9 +59,9 @@ fn add_path_usages_in_node(node: &Node, path_usages: &mut Vec<(Node, u32)>) {
 
 fn find_path_usages(nodes: &[Node]) -> Vec<(Node, u32)> {
     let mut path_usages = vec![];
-    nodes.iter().for_each(|node| {
+    for node in nodes {
         add_path_usages_in_node(node, &mut path_usages);
-    });
+    }
 
     path_usages
 }
@@ -125,19 +125,19 @@ fn merge_paths_for_node(
                 .find(|(path, _, _)| are_equal_paths(path, &node))
             {
                 let new_node = replace_id_of_node(node, id, id_map);
-                if !*first_found {
-                    *first_found = true;
-                    new_node
-                } else {
+                if *first_found {
                     Node::RegularNode {
                         node_type: RegularNodeType::Use,
                         namespace: NodeNamespace::empty(),
                         attributes: vec![OwnedAttribute::new(
                             OwnedName::local(HREF_NAME),
-                            format!("#{}", id),
+                            format!("#{id}"),
                         )],
                         children: vec![],
                     }
+                } else {
+                    *first_found = true;
+                    new_node
                 }
             } else {
                 node

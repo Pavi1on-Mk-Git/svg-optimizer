@@ -1,4 +1,4 @@
-use super::common::{constants::*, id_usage::make_id_usage_map, iter::EasyIter};
+use super::common::{constants::ID_NAME, id_usage::make_id_usage_map, iter::EasyIter};
 use crate::node::Node;
 use std::collections::BTreeMap;
 use xml::attribute::OwnedAttribute;
@@ -78,7 +78,7 @@ mod tests {
     test_optimize!(
         test_remove_useless_ids_style_attribute,
         remove_useless_ids,
-        r##"
+        r#"
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" width="3.1in" height="0.9in" viewBox="-12 -12 3699 1074" id="svg2" version="1.1" inkscape:version="0.48.4 r9939" sodipodi:docname="TreeMapping.fig">
         <defs id="defs64">
         <marker inkscape:stockid="Arrow2Lend" orient="auto" refY="0.0" refX="0.0" id="Arrow2Lend" style="overflow:visible;">
@@ -92,8 +92,8 @@ mod tests {
         </defs>
         <polyline points="675,375 675,150 300,150 300,358 " style="stroke:#000000;stroke-width:7.00088889;stroke-linejoin:miter;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#Arrow2Lend)" id="polyline20"/>
         </svg>
-        "##,
-        r##"
+        "#,
+        r#"
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" width="3.1in" height="0.9in" viewBox="-12 -12 3699 1074" version="1.1" inkscape:version="0.48.4 r9939" sodipodi:docname="TreeMapping.fig">
         <defs>
         <marker inkscape:stockid="Arrow2Lend" orient="auto" refY="0.0" refX="0.0" id="Arrow2Lend" style="overflow:visible;">
@@ -107,6 +107,6 @@ mod tests {
         </defs>
         <polyline points="675,375 675,150 300,150 300,358 " style="stroke:#000000;stroke-width:7.00088889;stroke-linejoin:miter;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"/>
         </svg>
-        "##
+        "#
     );
 }

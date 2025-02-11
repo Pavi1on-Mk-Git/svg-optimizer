@@ -61,8 +61,8 @@ mod tests {
         remove_empty_containers,
         r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>
         "#,
-        r#"
-        "#
+        r"
+        "
     );
 
     test_optimize!(
@@ -70,7 +70,7 @@ mod tests {
         remove_empty_containers,
         r#"<svg xmlns="http://www.w3.org/2000/svg"><a><g></g></a><defs></defs></svg>
         "#,
-        r#"
-        "#
+        r"
+        "
     );
 }

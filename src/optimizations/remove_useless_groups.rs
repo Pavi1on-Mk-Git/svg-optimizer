@@ -31,9 +31,11 @@ fn remove_useless_groups_from_node(node: Node, used_ids: &[String]) -> Option<No
 
             match new_children.len() {
                 0 => None,
-                1 if !is_only_child_used(&new_children[0], used_ids) => {
-                    collapse_group(new_children.remove(0), parent_namespace, parent_attr)
-                }
+                1 if !is_only_child_used(&new_children[0], used_ids) => Some(collapse_group(
+                    new_children.remove(0),
+                    parent_namespace,
+                    parent_attr,
+                )),
                 _ => Some(Node::RegularNode {
                     node_type: RegularNodeType::Group,
                     namespace: parent_namespace,
@@ -62,7 +64,7 @@ fn collapse_group(
     only_child: Node,
     group_namespace: NodeNamespace,
     group_attributes: Vec<OwnedAttribute>,
-) -> Option<Node> {
+) -> Node {
     if let Node::RegularNode {
         node_type,
         namespace,
@@ -70,19 +72,19 @@ fn collapse_group(
         children,
     } = only_child
     {
-        Some(Node::RegularNode {
+        Node::RegularNode {
             node_type,
             namespace,
             attributes: merge_attributes(group_attributes, attributes),
             children,
-        })
+        }
     } else {
-        Some(Node::RegularNode {
+        Node::RegularNode {
             node_type: RegularNodeType::Group,
             namespace: group_namespace,
             attributes: group_attributes,
             children: vec![only_child],
-        })
+        }
     }
 }
 

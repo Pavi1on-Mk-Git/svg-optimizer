@@ -1,4 +1,7 @@
-use super::{constants::*, iter::EasyIter};
+use super::{
+    constants::{HREF_NAME, ID_NAME},
+    iter::EasyIter,
+};
 use crate::node::{ChildlessNodeType, Node, RegularNodeType};
 use std::collections::BTreeMap;
 use xml::attribute::OwnedAttribute;

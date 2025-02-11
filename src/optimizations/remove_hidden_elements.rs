@@ -1,3 +1,4 @@
+#[allow(clippy::wildcard_imports)]
 use super::common::{constants::*, iter::EasyIter, unit::find_and_convert_to_px};
 use crate::node::{Node, RegularNodeType};
 use xml::attribute::OwnedAttribute;

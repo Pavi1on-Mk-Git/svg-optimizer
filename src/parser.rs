@@ -1,5 +1,4 @@
-use crate::node::{ChildlessNodeType::*, NodeNamespace};
-use crate::node::{Node, Node::*};
+use crate::node::{ChildlessNodeType, Node, NodeNamespace};
 use anyhow::Result;
 use std::io::Read;
 use xml::name::OwnedName;
@@ -61,17 +60,17 @@ impl<R: Read> Parser<R> {
 
         let node = match self.curr_event.take() {
             Some(XmlEvent::StartDocument { .. }) => None,
-            Some(XmlEvent::ProcessingInstruction { name, data }) => Some(ChildlessNode {
-                node_type: ProcessingInstruction(name, data),
+            Some(XmlEvent::ProcessingInstruction { name, data }) => Some(Node::ChildlessNode {
+                node_type: ChildlessNodeType::ProcessingInstruction(name, data),
             }),
-            Some(XmlEvent::CData(text)) => Some(ChildlessNode {
-                node_type: Text(text, true),
+            Some(XmlEvent::CData(text)) => Some(Node::ChildlessNode {
+                node_type: ChildlessNodeType::Text(text, true),
             }),
-            Some(XmlEvent::Comment(text)) => Some(ChildlessNode {
-                node_type: Comment(text),
+            Some(XmlEvent::Comment(text)) => Some(Node::ChildlessNode {
+                node_type: ChildlessNodeType::Comment(text),
             }),
-            Some(XmlEvent::Characters(text)) => Some(ChildlessNode {
-                node_type: Text(text, false),
+            Some(XmlEvent::Characters(text)) => Some(Node::ChildlessNode {
+                node_type: ChildlessNodeType::Text(text, false),
             }),
             Some(XmlEvent::StartElement {
                 attributes,
@@ -115,7 +114,7 @@ impl<R: Read> Parser<R> {
                 },
         }) = self.curr_event.take()
         {
-            RegularNode {
+            Node::RegularNode {
                 node_type: local_name.into(),
                 namespace: NodeNamespace {
                     parent_namespace: namespace,
@@ -163,7 +162,7 @@ mod tests {
         assert_eq!(nodes.len(), 1);
         let only_node = nodes.into_iter().next().unwrap();
         match only_node {
-            RegularNode {
+            Node::RegularNode {
                 node_type,
                 namespace,
                 attributes,
@@ -178,7 +177,7 @@ mod tests {
                 assert_eq!(attributes.len(), 2);
                 assert_eq!(children.len(), 3); // 2 whitespace children
             }
-            _ => {
+            Node::ChildlessNode { .. } => {
                 panic!();
             }
         }
@@ -201,9 +200,9 @@ mod tests {
 
     #[test]
     fn test_no_start_tag() -> Result<()> {
-        let test_string = r#"
+        let test_string = r"
             </svg>
-            "#;
+            ";
 
         let mut parser = Parser::new(test_string.as_bytes())?;
 

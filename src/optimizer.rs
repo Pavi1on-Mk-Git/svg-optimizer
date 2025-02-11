@@ -1,4 +1,4 @@
-use crate::optimizations::*;
+use crate::optimizations::Optimizations;
 use crate::parser::Parser;
 use crate::writer::SVGWriter;
 use anyhow::{Error, Result};
@@ -20,7 +20,7 @@ pub struct Optimizer {
 
     /// Names of the output files.
     ///
-    /// If given, must have the same length as file_names. Default output file names are opt_{original_filename}.
+    /// If given, must have the same length as `file_names`. Default output file names are `opt_{original_filename}`.
     #[arg(short, long, num_args = 1..)]
     output_file_names: Vec<PathBuf>,
 
@@ -34,20 +34,19 @@ pub struct Optimizer {
 
 impl Optimizer {
     fn get_output_path(input_path: &Path, output_path_arg: Option<&Path>) -> Result<PathBuf> {
-        match output_path_arg {
-            Some(path) => Ok(path.to_path_buf()),
-            None => {
-                let mut output_file_name = OsString::from("opt_");
+        if let Some(path) = output_path_arg {
+            Ok(path.to_path_buf())
+        } else {
+            let mut output_file_name = OsString::from("opt_");
 
-                if let Some(file_name) = input_path.file_name() {
-                    output_file_name.push(file_name);
-                    Ok(input_path.with_file_name(output_file_name))
-                } else {
-                    Err(Error::msg(format!(
-                        "Invalid input path given: {}",
-                        input_path.as_os_str().to_str().unwrap_or("invalid unicode")
-                    )))
-                }
+            if let Some(file_name) = input_path.file_name() {
+                output_file_name.push(file_name);
+                Ok(input_path.with_file_name(output_file_name))
+            } else {
+                Err(Error::msg(format!(
+                    "Invalid input path given: {}",
+                    input_path.as_os_str().to_str().unwrap_or("invalid unicode")
+                )))
             }
         }
     }
@@ -87,7 +86,7 @@ impl Optimizer {
         if self.output_file_names.is_empty() {
             self.file_names
                 .par_iter()
-                .try_for_each(|input_path| self.optimize_file(input_path, None))?
+                .try_for_each(|input_path| self.optimize_file(input_path, None))?;
         } else {
             self.file_names
                 .par_iter()

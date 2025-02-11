@@ -3,6 +3,11 @@ name = "svg-optimizer"
 version = "0.1.0"
 edition = "2021"
 
+[lints.clippy]
+module_name_repetitions = "allow"
+match_wildcard_for_single_variants = "allow"
+pedantic = { level = "warn", priority = -1 }
+
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.20", features = ["derive"] }

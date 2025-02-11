@@ -132,7 +132,7 @@ pub fn merge_consecutive_paths(nodes: Vec<Node>) -> Vec<Node> {
             }
         } else {
             merge_children_paths(node)
-        })
+        });
     }
     if let Some(prev_node) = node_holder {
         result.push(prev_node);
@@ -157,7 +157,7 @@ mod tests {
         "#,
         r#"
         <svg xmlns="http://www.w3.org/2000/svg">
-        <path pathLength="8" fill="red" stroke="black" stroke-width="5" transform="translate(-1100 -1200)" stroke-dashoffset="148" stroke-dasharray="148 148" d="M1400 1520 L1260 1480 M1280 480 L1110 460 L1060 260 L1180 240"/>
+        <path pathLength="8" fill="red" stroke="black" stroke-width="5" transform="translate(-1100 -1200)" stroke-dashoffset="148" stroke-dasharray="148 148" d="M1400 1520 L1260 1480M 0 0M1280 480 L1110 460 L1060 260 L1180 240"/>
         </svg>
         "#
     );

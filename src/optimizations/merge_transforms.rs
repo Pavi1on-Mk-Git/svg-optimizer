@@ -6,7 +6,7 @@ use itertools::Itertools;
 use lazy_regex::regex;
 use nalgebra::{Matrix2, Matrix3, Vector2};
 
-fn matrix(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn matrix(arguments: &[f64]) -> Option<Matrix3<f64>> {
     if let [a, b, c, d, e, f] = arguments[..] {
         Some(Matrix3::from_vec(vec![a, b, 0., c, d, 0., e, f, 1.]))
     } else {
@@ -14,7 +14,7 @@ fn matrix(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
     }
 }
 
-fn translate(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn translate(arguments: &[f64]) -> Option<Matrix3<f64>> {
     match arguments[..] {
         [x, y] => Some(Matrix3::new_translation(&Vector2::new(x, y))),
         [x] => Some(Matrix3::new_translation(&Vector2::new(x, x))),
@@ -22,7 +22,7 @@ fn translate(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
     }
 }
 
-fn scale(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn scale(arguments: &[f64]) -> Option<Matrix3<f64>> {
     match arguments[..] {
         [x, y] => Some(Matrix3::new_nonuniform_scaling(&Vector2::new(x, y))),
         [x] => Some(Matrix3::new_scaling(x)),
@@ -30,7 +30,7 @@ fn scale(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
     }
 }
 
-fn rotate(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn rotate(arguments: &[f64]) -> Option<Matrix3<f64>> {
     match arguments[..] {
         [a, x, y] => Some(
             Matrix3::new_translation(&Vector2::new(x, y))
@@ -42,7 +42,7 @@ fn rotate(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
     }
 }
 
-fn skew_x(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn skew_x(arguments: &[f64]) -> Option<Matrix3<f64>> {
     if let [a] = arguments[..] {
         Some(Matrix2::from_vec(vec![1., 0., a.to_radians().tan(), 1.]).to_homogeneous())
     } else {
@@ -50,7 +50,7 @@ fn skew_x(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
     }
 }
 
-fn skew_y(arguments: Vec<f64>) -> Option<Matrix3<f64>> {
+fn skew_y(arguments: &[f64]) -> Option<Matrix3<f64>> {
     if let [a] = arguments[..] {
         Some(Matrix2::from_vec(vec![1., a.to_radians().tan(), 0., 1.]).to_homogeneous())
     } else {
@@ -71,12 +71,12 @@ fn string_to_matrix(matrix_string: &str) -> Option<Matrix3<f64>> {
         .collect();
 
     match transform_type {
-        "matrix" => matrix(transform_arguments),
-        "translate" => translate(transform_arguments),
-        "scale" => scale(transform_arguments),
-        "rotate" => rotate(transform_arguments),
-        "skewX" => skew_x(transform_arguments),
-        "skewY" => skew_y(transform_arguments),
+        "matrix" => matrix(&transform_arguments),
+        "translate" => translate(&transform_arguments),
+        "scale" => scale(&transform_arguments),
+        "rotate" => rotate(&transform_arguments),
+        "skewX" => skew_x(&transform_arguments),
+        "skewY" => skew_y(&transform_arguments),
         _ => None, // not handling CSS transform functions
     }
 }
@@ -96,7 +96,7 @@ fn matrix_to_string(matrix: &Matrix3<f64>, precision: usize) -> String {
 fn merge_transform_attribute(transform_str: &str, precision: usize) -> String {
     let transform_string = transform_str.split_whitespace().join(" ");
     let transforms: Vec<&str> = transform_string
-        .split(")")
+        .split(')')
         .filter(|substring| !substring.trim().is_empty())
         .collect();
 
@@ -157,15 +157,15 @@ mod tests {
     test_optimize!(
         test_merge_two_matrices,
         test_merge,
-        r##"<svg viewBox="-40 0 150 100">
+        r#"<svg viewBox="-40 0 150 100">
         <g transform="translate(10 10) matrix(2 3 1 2 1 2) matrix(1 4 2 5 3 6)">
             <path d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z"/>
         </g>
-        </svg>"##,
-        r##"<svg viewBox="-40 0 150 100">
+        </svg>"#,
+        r#"<svg viewBox="-40 0 150 100">
         <g transform="matrix(6 11 9 16 23 33)">
             <path d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z"/>
         </g>
-        </svg>"##
+        </svg>"#
     );
 }

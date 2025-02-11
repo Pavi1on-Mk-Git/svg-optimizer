@@ -15,11 +15,10 @@ fn is_hex_color_prefix(id: &str) -> bool {
 fn make_shorten_ids_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
     let ids = find_ids_for_subtree(nodes).filter_to_vec(|id| !is_hex_color_prefix(id));
 
-    BTreeMap::from_iter(
-        ids.clone()
-            .into_iter()
-            .zip(IdGenerator::new(vec![]).filter(|id| !ids.contains(id))),
-    )
+    ids.clone()
+        .into_iter()
+        .zip(IdGenerator::new(vec![]).filter(|id| !ids.contains(id)))
+        .collect()
 }
 
 pub fn shorten_ids(nodes: Vec<Node>) -> Vec<Node> {

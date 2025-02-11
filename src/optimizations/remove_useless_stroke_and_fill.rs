@@ -38,10 +38,10 @@ fn remove_useless_stroke_and_fill_from_attributes(
     mut attributes: Vec<OwnedAttribute>,
 ) -> Vec<OwnedAttribute> {
     if is_stroke_invisible(&attributes) {
-        attributes = attributes.filter_to_vec(|attr| !attr.name.local_name.starts_with("stroke"))
+        attributes = attributes.filter_to_vec(|attr| !attr.name.local_name.starts_with("stroke"));
     }
     if is_fill_invisible(&attributes) {
-        attributes = attributes.filter_to_vec(|attr| !attr.name.local_name.starts_with("fill-"))
+        attributes = attributes.filter_to_vec(|attr| !attr.name.local_name.starts_with("fill-"));
     }
     attributes
 }
