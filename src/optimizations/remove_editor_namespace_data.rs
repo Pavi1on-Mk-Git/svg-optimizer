@@ -21,7 +21,7 @@ fn has_editor_namespace_data(attr: &OwnedAttribute) -> bool {
     attr.name
         .prefix
         .as_ref()
-        .map_or(true, |prefix| ALLOWED_NAMESPACES.contains(&prefix.as_str()))
+        .is_none_or(|prefix| ALLOWED_NAMESPACES.contains(&prefix.as_str()))
 }
 
 fn remove_editor_namespace_data_from_node(node: Node) -> Option<Node> {

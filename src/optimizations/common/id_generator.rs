@@ -61,24 +61,24 @@ mod tests {
 
     #[test]
     fn test_id_generation() {
-        let mut gen = IdGenerator::new(vec![]);
+        let mut generator = IdGenerator::new(vec![]);
 
-        assert_eq!(gen.nth(5), Some("l".into()));
-        assert_eq!(gen.nth(CHARS_SIZE - 1), Some("lg".into()));
-        assert_eq!(gen.nth(CHARS_SIZE.pow(2)), Some("mgg".into()));
+        assert_eq!(generator.nth(5), Some("l".into()));
+        assert_eq!(generator.nth(CHARS_SIZE - 1), Some("lg".into()));
+        assert_eq!(generator.nth(CHARS_SIZE.pow(2)), Some("mgg".into()));
         assert_eq!(
-            gen.nth(CHARS_SIZE.pow(3) - CHARS_SIZE - 1),
+            generator.nth(CHARS_SIZE.pow(3) - CHARS_SIZE - 1),
             Some("mZZ".into())
         );
     }
 
     #[test]
     fn test_id_generation_skip_used() {
-        let mut gen = IdGenerator::new(vec!["g".into(), "m".into()]);
+        let mut generator = IdGenerator::new(vec!["g".into(), "m".into()]);
         assert_equal(
-            gen.by_ref().take(8),
+            generator.by_ref().take(8),
             vec!["h", "i", "j", "k", "l", "n", "o", "p"],
         );
-        assert_eq!(gen.nth(CHARS_SIZE * 2 - 10), Some("gh".into()));
+        assert_eq!(generator.nth(CHARS_SIZE * 2 - 10), Some("gh".into()));
     }
 }
