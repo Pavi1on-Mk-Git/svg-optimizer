@@ -47,7 +47,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
     }
 }
 
-pub fn remove_unused_defs(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_unused_defs(nodes: Vec<Node>) -> Vec<Node> {
     let id_usage_map = make_id_usage_map(&nodes);
     nodes.filter_map_to_vec(|node| remove_unused_defs_for_node(node, &id_usage_map))
 }

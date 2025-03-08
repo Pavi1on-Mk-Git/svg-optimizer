@@ -28,7 +28,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_whitespace_outside_tags(nodes: Vec<Node>) -> Vec<Node> {
     nodes.filter_map_to_vec(remove_whitespace_outside_tags_from_node)
 }
 

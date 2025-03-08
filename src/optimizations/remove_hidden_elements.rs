@@ -111,7 +111,7 @@ fn remove_hidden_elements_from_node(node: Node) -> Option<Node> {
     })
 }
 
-pub fn remove_hidden_elements(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_hidden_elements(nodes: Vec<Node>) -> Vec<Node> {
     nodes.filter_map_to_vec(remove_hidden_elements_from_node)
 }
 

@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 /// By default, all optimizations that do not take parameters are enabled.
 #[derive(clap::Parser)]
 #[command(version)]
-pub struct Optimizer {
+pub(crate) struct Optimizer {
     /// Names of the files to optimize.
     #[arg(num_args = 1..)]
     file_names: Vec<PathBuf>,
@@ -80,7 +80,7 @@ impl Optimizer {
         }
     }
 
-    pub fn optimize(&self) -> Result<()> {
+    pub(crate) fn optimize(&self) -> Result<()> {
         self.validate_args()?;
 
         if self.output_file_names.is_empty() {

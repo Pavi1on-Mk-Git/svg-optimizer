@@ -13,13 +13,13 @@ use xml::{
 ///
 /// Because of library limitations, xml and DOCTYPE declarations are skipped.
 /// Whitespace between attributes, as well as their order, are lost as well.
-pub struct Parser<R: Read> {
+pub(crate) struct Parser<R: Read> {
     source: EventReader<R>,
     curr_event: Option<XmlEvent>,
 }
 
 impl<R: Read> Parser<R> {
-    pub fn new(source: R) -> Result<Self> {
+    pub(crate) fn new(source: R) -> Result<Self> {
         let mut parser = Parser {
             source: ParserConfig2::new()
                 .ignore_comments(false)
@@ -40,7 +40,7 @@ impl<R: Read> Parser<R> {
         Ok(())
     }
 
-    pub fn parse_document(&mut self) -> Result<Vec<Node>> {
+    pub(crate) fn parse_document(&mut self) -> Result<Vec<Node>> {
         let mut nodes = Vec::new();
 
         while self.curr_event.is_some() {

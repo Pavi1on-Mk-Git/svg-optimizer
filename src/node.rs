@@ -5,14 +5,14 @@ use xml::namespace::Namespace;
 use xml::reader::XmlEvent;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct NodeNamespace {
-    pub parent_namespace: Option<String>,
-    pub prefix: Option<String>,
-    pub element_namespace: Namespace,
+pub(crate) struct NodeNamespace {
+    pub(crate) parent_namespace: Option<String>,
+    pub(crate) prefix: Option<String>,
+    pub(crate) element_namespace: Namespace,
 }
 
 impl NodeNamespace {
-    pub fn empty() -> Self {
+    pub(crate) fn empty() -> Self {
         Self {
             parent_namespace: None,
             prefix: None,
@@ -22,7 +22,7 @@ impl NodeNamespace {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Node {
+pub(crate) enum Node {
     RegularNode {
         node_type: RegularNodeType,
         namespace: NodeNamespace,
@@ -60,7 +60,7 @@ macro_rules! conversions {
     ($([$node_type:ident, $name:literal]),*) => {
 
         #[derive(Debug, PartialEq, Eq, Clone)]
-        pub enum RegularNodeType {
+        pub(crate) enum RegularNodeType {
             Unknown(String),
             $($node_type,)*
         }
@@ -168,7 +168,7 @@ conversions!(
 );
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ChildlessNodeType {
+pub(crate) enum ChildlessNodeType {
     ProcessingInstruction(String, Option<String>),
     Comment(String),
     Text(String, bool),
@@ -218,7 +218,7 @@ impl IntoIterator for Node {
     }
 }
 
-pub enum NodeIter {
+pub(crate) enum NodeIter {
     RegularNodeIter {
         start_tag: Option<XmlEvent>,
         end_tag: Option<XmlEvent>,

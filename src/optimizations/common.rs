@@ -1,12 +1,12 @@
-pub mod constants;
-pub mod id_generator;
-pub mod id_usage;
-pub mod iter;
-pub mod replace_ids;
-pub mod unit;
+pub(crate) mod constants;
+pub(crate) mod id_generator;
+pub(crate) mod id_usage;
+pub(crate) mod iter;
+pub(crate) mod replace_ids;
+pub(crate) mod unit;
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     macro_rules! test_optimize {
         ($test_name:ident, $tested_fn:ident, $test_str:literal, $expected:literal) => {
             #[test]

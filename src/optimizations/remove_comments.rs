@@ -21,7 +21,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_comments(nodes: Vec<Node>) -> Vec<Node> {
     nodes.filter_map_to_vec(remove_comments_from_node)
 }
 

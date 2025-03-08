@@ -158,7 +158,7 @@ fn merge_paths_for_node(
     }
 }
 
-pub fn convert_paths_to_uses(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn convert_paths_to_uses(nodes: Vec<Node>) -> Vec<Node> {
     let path_usages = find_path_usages(&nodes);
     let mut paths_map = prepare_map_for_paths(&nodes, path_usages);
     let mut id_map = BTreeMap::new();

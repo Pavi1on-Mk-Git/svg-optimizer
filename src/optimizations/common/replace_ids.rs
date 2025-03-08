@@ -80,6 +80,6 @@ fn replace_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
     }
 }
 
-pub fn replace_ids(nodes: Vec<Node>, id_map: &BTreeMap<String, String>) -> Vec<Node> {
+pub(crate) fn replace_ids(nodes: Vec<Node>, id_map: &BTreeMap<String, String>) -> Vec<Node> {
     nodes.map_to_vec(|node| replace_ids_for_node(node, id_map))
 }

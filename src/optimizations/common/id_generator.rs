@@ -1,13 +1,13 @@
 use super::iter::EasyIter;
 
-pub struct IdGenerator {
+pub(crate) struct IdGenerator {
     base_characters: Vec<char>,
     generated_ids: usize,
     used_ids: Vec<String>,
 }
 
 impl IdGenerator {
-    pub fn new(used_ids: Vec<String>) -> Self {
+    pub(crate) fn new(used_ids: Vec<String>) -> Self {
         Self {
             // not using abcdef to avoid conflicts with hex colors in CSS
             base_characters: "ghijklmnopqrstuvwxyzGHIJKLMNOPQRSTUVWXYZ".chars().collect(),

@@ -12,7 +12,7 @@ fn unit_to_multiplier(unit: &str) -> Option<f64> {
     }
 }
 
-pub fn convert_to_px(value: &str) -> Option<f64> {
+pub(crate) fn convert_to_px(value: &str) -> Option<f64> {
     let match_val_and_unit = regex!(r"(.*?)([^\d\.]*)$");
 
     match_val_and_unit
@@ -25,11 +25,11 @@ pub fn convert_to_px(value: &str) -> Option<f64> {
         })
 }
 
-pub fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Option<f64> {
+pub(crate) fn find_and_convert_to_px(attributes: &[OwnedAttribute], name: &str) -> Option<f64> {
     find_attribute(attributes, name).and_then(|value| convert_to_px(value))
 }
 
-pub fn round_float(number: f64, precision: usize) -> String {
+pub(crate) fn round_float(number: f64, precision: usize) -> String {
     let rounded = format!("{number:.precision$}");
     let rounded = regex_replace!(r"(\.\d*?)0*$", rounded.as_str(), "$1");
     let rounded = regex_replace!(r"\.$", &rounded, "");

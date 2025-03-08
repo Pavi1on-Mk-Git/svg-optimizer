@@ -118,7 +118,7 @@ fn merge_paths(first: Node, second: Node) -> Either<(Node, Node), Node> {
     }
 }
 
-pub fn merge_consecutive_paths(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn merge_consecutive_paths(nodes: Vec<Node>) -> Vec<Node> {
     let mut result = vec![];
     let mut node_holder = None;
     for node in nodes {

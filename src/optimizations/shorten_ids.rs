@@ -21,7 +21,7 @@ fn make_shorten_ids_map(nodes: &Vec<Node>) -> BTreeMap<String, String> {
         .collect()
 }
 
-pub fn shorten_ids(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn shorten_ids(nodes: Vec<Node>) -> Vec<Node> {
     let id_map = make_shorten_ids_map(&nodes);
     replace_ids(nodes, &id_map)
 }

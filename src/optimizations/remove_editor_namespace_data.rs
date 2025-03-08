@@ -41,7 +41,7 @@ fn remove_editor_namespace_data_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_editor_namespace_data(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_editor_namespace_data(nodes: Vec<Node>) -> Vec<Node> {
     nodes.filter_map_to_vec(remove_editor_namespace_data_from_node)
 }
 

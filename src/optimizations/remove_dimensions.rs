@@ -61,7 +61,7 @@ fn remove_dimensions_from_node(node: Node) -> Node {
     }
 }
 
-pub fn remove_dimensions(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_dimensions(nodes: Vec<Node>) -> Vec<Node> {
     nodes.map_to_vec(remove_dimensions_from_node)
 }
 

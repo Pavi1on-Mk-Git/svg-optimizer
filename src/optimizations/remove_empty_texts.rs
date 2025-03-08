@@ -45,7 +45,7 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
     }
 }
 
-pub fn remove_empty_texts(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_empty_texts(nodes: Vec<Node>) -> Vec<Node> {
     nodes.filter_map_to_vec(remove_empty_texts_from_node)
 }
 

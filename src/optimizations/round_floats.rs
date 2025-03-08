@@ -30,7 +30,7 @@ fn round_floats_in_node(node: Node, precision: usize) -> Node {
     }
 }
 
-pub fn round_floats(nodes: Vec<Node>, precision: usize) -> Vec<Node> {
+pub(crate) fn round_floats(nodes: Vec<Node>, precision: usize) -> Vec<Node> {
     nodes.map_to_vec(|node| round_floats_in_node(node, precision))
 }
 

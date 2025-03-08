@@ -28,7 +28,7 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
     }
 }
 
-pub fn remove_useless_ids(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_useless_ids(nodes: Vec<Node>) -> Vec<Node> {
     let id_usage_map = make_id_usage_map(&nodes);
     nodes.map_to_vec(|node| remove_useless_ids_for_node(node, &id_usage_map))
 }

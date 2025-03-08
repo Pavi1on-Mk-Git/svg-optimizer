@@ -63,7 +63,7 @@ fn remove_useless_stroke_and_fill_from_node(node: Node) -> Node {
     }
 }
 
-pub fn remove_useless_stroke_and_fill(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_useless_stroke_and_fill(nodes: Vec<Node>) -> Vec<Node> {
     nodes.map_to_vec(remove_useless_stroke_and_fill_from_node)
 }
 

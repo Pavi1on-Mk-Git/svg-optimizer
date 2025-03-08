@@ -1,4 +1,3 @@
-mod errors;
 mod node;
 mod optimizations;
 mod optimizer;

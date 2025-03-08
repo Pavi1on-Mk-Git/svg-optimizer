@@ -3,7 +3,7 @@ use super::common::{constants::*, iter::EasyIter};
 use crate::node::{Node, RegularNodeType};
 use xml::attribute::OwnedAttribute;
 
-pub const NO_GROUP_ATTRIBUTES: [&str; 11] = [
+pub(crate) const NO_GROUP_ATTRIBUTES: [&str; 11] = [
     ID_NAME,
     CX_NAME,
     CY_NAME,
@@ -91,7 +91,7 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
     }
 }
 
-pub fn extract_common_attributes(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn extract_common_attributes(nodes: Vec<Node>) -> Vec<Node> {
     nodes.map_to_vec(extract_common_attributes_from_node)
 }
 

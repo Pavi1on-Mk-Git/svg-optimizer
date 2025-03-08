@@ -3,12 +3,12 @@ use xml::{writer::Error, EmitterConfig, EventWriter};
 
 use crate::node::Node;
 
-pub struct SVGWriter<W: Write> {
+pub(crate) struct SVGWriter<W: Write> {
     writer: EventWriter<W>,
 }
 
 impl<W: Write> SVGWriter<W> {
-    pub fn new(target: W) -> Self {
+    pub(crate) fn new(target: W) -> Self {
         let mut config = EmitterConfig::new()
             .write_document_declaration(false)
             .pad_self_closing(false);
@@ -20,7 +20,7 @@ impl<W: Write> SVGWriter<W> {
         }
     }
 
-    pub fn write(&mut self, nodes: Vec<Node>) -> Result<(), Error> {
+    pub(crate) fn write(&mut self, nodes: Vec<Node>) -> Result<(), Error> {
         nodes.into_iter().try_for_each(|node| {
             node.into_iter()
                 .try_for_each(|event| self.writer.write(event.as_writer_event().unwrap()))
@@ -30,7 +30,7 @@ impl<W: Write> SVGWriter<W> {
     }
 
     #[cfg(test)]
-    pub fn into_inner(self) -> W {
+    pub(crate) fn into_inner(self) -> W {
         self.writer.into_inner()
     }
 }

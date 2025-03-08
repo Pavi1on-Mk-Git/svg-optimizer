@@ -139,7 +139,7 @@ fn merge_transforms_in_node(node: Node, precision: usize) -> Node {
     }
 }
 
-pub fn merge_transforms(nodes: Vec<Node>, precision: usize) -> Vec<Node> {
+pub(crate) fn merge_transforms(nodes: Vec<Node>, precision: usize) -> Vec<Node> {
     nodes.map_to_vec(|node| merge_transforms_in_node(node, precision))
 }
 

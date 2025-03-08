@@ -21,7 +21,7 @@ fn sort_attributes_from_node(node: Node) -> Node {
     }
 }
 
-pub fn sort_attributes(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn sort_attributes(nodes: Vec<Node>) -> Vec<Node> {
     nodes.map_to_vec(sort_attributes_from_node)
 }
 

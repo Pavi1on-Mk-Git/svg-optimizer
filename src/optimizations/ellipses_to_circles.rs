@@ -77,7 +77,7 @@ fn get_new_node(
     }
 }
 
-pub fn ellipses_to_circles(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn ellipses_to_circles(nodes: Vec<Node>) -> Vec<Node> {
     nodes.map_to_vec(ellipses_to_circles_from_node)
 }
 

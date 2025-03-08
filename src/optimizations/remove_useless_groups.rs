@@ -97,7 +97,7 @@ fn merge_attributes(
     child
 }
 
-pub fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
+pub(crate) fn remove_useless_groups(nodes: Vec<Node>) -> Vec<Node> {
     let used_ids = find_ids_for_subtree(&nodes);
     nodes.filter_map_to_vec(|node| remove_useless_groups_from_node(node, &used_ids))
 }

@@ -4,14 +4,17 @@ use std::collections::BTreeMap;
 use std::iter::repeat;
 use xml::attribute::OwnedAttribute;
 
-pub fn find_attribute<'a>(attributes: &'a [OwnedAttribute], name: &str) -> Option<&'a String> {
+pub(crate) fn find_attribute<'a>(
+    attributes: &'a [OwnedAttribute],
+    name: &str,
+) -> Option<&'a String> {
     attributes
         .iter()
         .find(|attr| attr.name.local_name == name)
         .map(|id| &id.value)
 }
 
-pub fn find_attribute_mut<'a>(
+pub(crate) fn find_attribute_mut<'a>(
     attributes: &'a mut [OwnedAttribute],
     name: &str,
 ) -> Option<&'a mut String> {
@@ -21,7 +24,7 @@ pub fn find_attribute_mut<'a>(
         .map(|id| &mut id.value)
 }
 
-pub fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
+pub(crate) fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
     let mut ids = vec![];
 
     for node in nodes {
@@ -97,7 +100,7 @@ fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
     }
 }
 
-pub fn make_id_usage_map(nodes: &Vec<Node>) -> BTreeMap<String, bool> {
+pub(crate) fn make_id_usage_map(nodes: &Vec<Node>) -> BTreeMap<String, bool> {
     let ids = find_ids_for_subtree(nodes);
     let mut id_usage_map = ids.into_iter().zip(repeat(false)).collect();
 

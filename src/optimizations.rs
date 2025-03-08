@@ -1,6 +1,6 @@
 use crate::node::Node;
 
-pub mod common;
+pub(crate) mod common;
 
 macro_rules! use_optimizations {
     ([$([$regular_opt_name:ident, $disable_flag_name:ident, $regular_doc:literal,]),*],
@@ -16,7 +16,7 @@ macro_rules! use_optimizations {
         )*
 
         #[derive(clap::Parser)]
-        pub struct Optimizations {
+        pub(crate) struct Optimizations {
             $(
                 #[arg(long)]
                 #[doc = $regular_doc]
@@ -39,7 +39,7 @@ macro_rules! use_optimizations {
         }
 
         impl Optimizations {
-            pub fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Vec<Node> {
+            pub(crate) fn apply(&self, mut nodes: Vec<Node>, default_all: bool) -> Vec<Node> {
                 $(
                     if self.$regular_opt_name || (default_all && !self.$disable_flag_name) {
                         nodes = $regular_opt_name(nodes);
@@ -58,7 +58,7 @@ macro_rules! use_optimizations {
             $(
                 #[cfg(test)]
                 #[allow(dead_code)]
-                pub fn $disable_flag_name(&self) -> bool {
+                pub(crate) fn $disable_flag_name(&self) -> bool {
                     self.$disable_flag_name
                 }
             )*
@@ -75,7 +75,7 @@ use_optimizations!(
     [
         remove_whitespace_outside_tags,
         no_remove_whitespace_outside_tags,
-        "Remove excess whitespace from outside of tags. Leaves whitespace between <text> tags, as it may be rendered.",
+        "Remove excess whitespace from outside of tags. Leaves whitespace between `<text>` tags, as it may be rendered.",
     ],
     [
         ellipses_to_circles,
@@ -90,7 +90,7 @@ use_optimizations!(
     [
         remove_descriptions,
         no_remove_descriptions,
-        "Remove <title>, <metadata>, <desc> tags and their contents.",
+        "Remove `<title>`, `<metadata>`, `<desc>` tags and their contents.",
     ],
     [
         remove_useless_groups,
@@ -105,7 +105,7 @@ use_optimizations!(
     [
         remove_empty_texts,
         no_remove_empty_texts,
-        "Remove empty <text>, <tspan>, <tref> tags.",
+        "Remove empty `<text>`, `<tspan>`, `<tref>` tags.",
     ],
     [
         shorten_ids,
@@ -155,7 +155,7 @@ use_optimizations!(
     [
         convert_paths_to_uses,
         no_convert_paths_to_uses,
-        "Replace identical paths with <use>s of a single path.",
+        "Replace identical paths with `<use>`s of a single path.",
     ],
     [
         remove_editor_namespace_data,
@@ -176,7 +176,7 @@ use_optimizations!(
 );
 
 #[cfg(test)]
-pub mod test {
+pub(crate) mod test {
     use super::common::test::test_optimize;
     use crate::node::Node;
     use crate::parser::Parser;

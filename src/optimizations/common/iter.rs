@@ -1,4 +1,4 @@
-pub trait EasyIter<T> {
+pub(crate) trait EasyIter<T> {
     fn filter_to_vec<F>(self, func: F) -> Vec<T>
     where
         F: FnMut(&T) -> bool;
