@@ -2,6 +2,12 @@
 name = "svg-optimizer"
 version = "1.0.0"
 edition = "2024"
+description = "SVG file optimizer"
+license = "MIT"
+repository = "https://github.com/Pavi1on-Mk-Git/svg-optimizer"
+keywords = ["svg", "optimizer"]
+categories = ["command-line-utilities"]
+include = ["/src"]
 
 [lints.clippy]
 module_name_repetitions = "allow"
