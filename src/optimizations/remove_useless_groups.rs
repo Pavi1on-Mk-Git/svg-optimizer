@@ -199,4 +199,34 @@ mod tests {
         </svg>
         "#
     );
+
+    test_optimize!(
+        test_remove_useless_groups_with_duplicate_class_in_child,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g class="parent"><path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M10,10 L20,20"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M10,10 L20,20"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_merge_without_introducing_duplicates,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g class="flowchart-link" stroke="red"><path class="flowchart-link edge-pattern-solid" d="M10,10 L20,20"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <path class="flowchart-link edge-pattern-solid" d="M10,10 L20,20" stroke="red"/>
+        </svg>
+        "#
+    );
 }
