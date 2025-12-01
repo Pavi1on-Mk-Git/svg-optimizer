@@ -7,12 +7,11 @@ use crate::node::{Node, NodeNamespace, RegularNodeType};
 use xml::attribute::OwnedAttribute;
 
 fn is_only_child_used(only_child: &Node, used_ids: &[String]) -> bool {
-    if let Node::RegularNode { attributes, .. } = only_child {
-        if let Some(id) = find_attribute(attributes, ID_NAME) {
-            if used_ids.contains(id) {
-                return true;
-            }
-        }
+    if let Node::RegularNode { attributes, .. } = only_child
+        && let Some(id) = find_attribute(attributes, ID_NAME)
+        && used_ids.contains(id)
+    {
+        return true;
     }
 
     false

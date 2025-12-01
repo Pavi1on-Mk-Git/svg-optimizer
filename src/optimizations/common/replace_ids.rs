@@ -10,19 +10,19 @@ fn replace_ids_in_attribute(
     mut attribute: OwnedAttribute,
     id_map: &BTreeMap<String, String>,
 ) -> OwnedAttribute {
-    if attribute.name.local_name == ID_NAME {
-        if let Some(new_id) = id_map.get(&attribute.value) {
-            attribute.value = new_id.clone();
-        }
+    if attribute.name.local_name == ID_NAME
+        && let Some(new_id) = id_map.get(&attribute.value)
+    {
+        attribute.value = new_id.clone();
     }
 
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
-            let (first, rest) = attribute.value.split_at(1);
-            if first == "#" {
-                if let Some(new_id) = id_map.get(rest) {
-                    attribute.value = format!("#{new_id}");
-                }
+            if let Some((first, rest)) = attribute.value.split_once('#')
+                && first == "#"
+                && let Some(new_id) = id_map.get(rest)
+            {
+                attribute.value = format!("#{new_id}");
             }
         }
         _ => {

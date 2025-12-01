@@ -48,11 +48,11 @@ pub(crate) fn find_ids_for_subtree(nodes: &Vec<Node>) -> Vec<String> {
 fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<String, bool>) {
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
-            let (first, rest) = attribute.value.split_at(1);
-            if first == "#" {
-                if let Some(value_in_map) = id_map.get_mut(rest) {
-                    *value_in_map = true;
-                }
+            if let Some((first, rest)) = attribute.value.split_once('#')
+                && first == "#"
+                && let Some(value_in_map) = id_map.get_mut(rest)
+            {
+                *value_in_map = true;
             }
         }
         _ => {
@@ -86,9 +86,9 @@ fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
         ..
     } = node
     {
-        attributes
-            .iter()
-            .for_each(|attribute| find_id_usage_in_attribute(attribute, id_map));
+        for attribute in attributes {
+            find_id_usage_in_attribute(attribute, id_map);
+        }
 
         let find_func = if let RegularNodeType::Style = node_type {
             find_id_usages_in_style_node
@@ -96,7 +96,9 @@ fn find_id_usages_for_node(node: &Node, id_map: &mut BTreeMap<String, bool>) {
             find_id_usages_for_node
         };
 
-        children.iter().for_each(|child| find_func(child, id_map));
+        for child in children {
+            find_func(child, id_map);
+        }
     }
 }
 
@@ -104,9 +106,9 @@ pub(crate) fn make_id_usage_map(nodes: &Vec<Node>) -> BTreeMap<String, bool> {
     let ids = find_ids_for_subtree(nodes);
     let mut id_usage_map = ids.into_iter().zip(repeat(false)).collect();
 
-    nodes
-        .iter()
-        .for_each(|node| find_id_usages_for_node(node, &mut id_usage_map));
+    for node in nodes {
+        find_id_usages_for_node(node, &mut id_usage_map);
+    }
 
     id_usage_map
 }
