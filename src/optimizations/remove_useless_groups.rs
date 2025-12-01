@@ -169,4 +169,34 @@ mod tests {
         </svg>
         "##
     );
+
+    test_optimize!(
+        test_remove_useless_groups_child_attribute_precedence,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g fill="red" stroke="blue"><circle cx="40" cy="40" r="25" fill="green"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="25" fill="green" stroke="blue"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_no_duplicate_attributes,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g fill="red" stroke="blue" opacity="0.5"><rect x="10" y="10" width="100" height="100" fill="green" stroke="blue"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="100" height="100" fill="green" stroke="blue" opacity="0.5"/>
+        </svg>
+        "#
+    );
 }

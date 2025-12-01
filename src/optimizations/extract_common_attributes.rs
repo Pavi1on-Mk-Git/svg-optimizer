@@ -167,4 +167,25 @@ mod tests {
         </svg>
         "#
     );
+
+    test_optimize!(
+        test_extract_common_attributes_no_duplicate_attributes,
+        extract_common_attributes,
+        r#"
+        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+        <g fill="white" stroke="red">
+        <circle cx="40" cy="40" r="25" fill="blue" stroke="red"/>
+        <circle cx="60" cy="60" r="25" fill="blue" stroke="red"/>
+        </g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
+        <g fill="blue" stroke="red">
+        <circle cx="40" cy="40" r="25"/>
+        <circle cx="60" cy="60" r="25"/>
+        </g>
+        </svg>
+        "#
+    );
 }
