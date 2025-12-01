@@ -19,7 +19,7 @@ fn remove_descriptions_from_node(node: Node) -> Option<Node> {
             attributes,
             children: remove_descriptions(children),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

@@ -7,12 +7,11 @@ use crate::node::{Node, NodeNamespace, RegularNodeType};
 use xml::attribute::OwnedAttribute;
 
 fn is_only_child_used(only_child: &Node, used_ids: &[String]) -> bool {
-    if let Node::RegularNode { attributes, .. } = only_child {
-        if let Some(id) = find_attribute(attributes, ID_NAME) {
-            if used_ids.contains(id) {
-                return true;
-            }
-        }
+    if let Node::RegularNode { attributes, .. } = only_child
+        && let Some(id) = find_attribute(attributes, ID_NAME)
+        && used_ids.contains(id)
+    {
+        return true;
     }
 
     false
@@ -56,7 +55,7 @@ fn remove_useless_groups_from_node(node: Node, used_ids: &[String]) -> Option<No
             children: children
                 .filter_map_to_vec(|child| remove_useless_groups_from_node(child, used_ids)),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 
@@ -92,8 +91,13 @@ fn merge_attributes(
     parent: Vec<OwnedAttribute>,
     mut child: Vec<OwnedAttribute>,
 ) -> Vec<OwnedAttribute> {
-    child.extend(parent);
-    child.dedup_by(|fst, snd| fst.name == snd.name);
+    // Add parent attributes that don't conflict with child attributes
+    // Child attributes take precedence
+    for parent_attr in parent {
+        if !child.iter().any(|attr| attr.name == parent_attr.name) {
+            child.push(parent_attr);
+        }
+    }
     child
 }
 
@@ -164,5 +168,65 @@ mod tests {
         <use href="#heart" fill="none" stroke="red"/>
         </svg>
         "##
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_child_attribute_precedence,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g fill="red" stroke="blue"><circle cx="40" cy="40" r="25" fill="green"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="25" fill="green" stroke="blue"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_no_duplicate_attributes,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g fill="red" stroke="blue" opacity="0.5"><rect x="10" y="10" width="100" height="100" fill="green" stroke="blue"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="100" height="100" fill="green" stroke="blue" opacity="0.5"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_with_duplicate_class_in_child,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g class="parent"><path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M10,10 L20,20"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M10,10 L20,20"/>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_remove_useless_groups_merge_without_introducing_duplicates,
+        remove_useless_groups,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <g class="flowchart-link" stroke="red"><path class="flowchart-link edge-pattern-solid" d="M10,10 L20,20"/></g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <path class="flowchart-link edge-pattern-solid" d="M10,10 L20,20" stroke="red"/>
+        </svg>
+        "#
     );
 }

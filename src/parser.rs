@@ -5,7 +5,7 @@ use xml::name::OwnedName;
 use xml::{
     attribute::OwnedAttribute,
     namespace::Namespace,
-    reader::{ParserConfig2, XmlEvent},
+    reader::{ParserConfig, XmlEvent},
     EventReader,
 };
 
@@ -21,7 +21,7 @@ pub(crate) struct Parser<R: Read> {
 impl<R: Read> Parser<R> {
     pub(crate) fn new(source: R) -> Result<Self> {
         let mut parser = Parser {
-            source: ParserConfig2::new()
+            source: ParserConfig::new()
                 .ignore_comments(false)
                 .whitespace_to_characters(true)
                 .ignore_root_level_whitespace(false)
@@ -35,7 +35,15 @@ impl<R: Read> Parser<R> {
     fn next_event(&mut self) -> Result<()> {
         self.curr_event = match self.source.next()? {
             XmlEvent::EndDocument => None,
-            event => Some(event),
+            event @ (XmlEvent::StartDocument { .. }
+            | XmlEvent::ProcessingInstruction { .. }
+            | XmlEvent::StartElement { .. }
+            | XmlEvent::EndElement { .. }
+            | XmlEvent::CData(_)
+            | XmlEvent::Comment(_)
+            | XmlEvent::Characters(_)
+            | XmlEvent::Whitespace(_)
+            | XmlEvent::Doctype { .. }) => Some(event),
         };
         Ok(())
     }
@@ -59,7 +67,6 @@ impl<R: Read> Parser<R> {
         }
 
         let node = match self.curr_event.take() {
-            Some(XmlEvent::StartDocument { .. }) => None,
             Some(XmlEvent::ProcessingInstruction { name, data }) => Some(Node::ChildlessNode {
                 node_type: ChildlessNodeType::ProcessingInstruction(name, data),
             }),
@@ -69,15 +76,23 @@ impl<R: Read> Parser<R> {
             Some(XmlEvent::Comment(text)) => Some(Node::ChildlessNode {
                 node_type: ChildlessNodeType::Comment(text),
             }),
-            Some(XmlEvent::Characters(text)) => Some(Node::ChildlessNode {
-                node_type: ChildlessNodeType::Text(text, false),
-            }),
+            Some(XmlEvent::Characters(text) | XmlEvent::Whitespace(text)) => {
+                Some(Node::ChildlessNode {
+                    node_type: ChildlessNodeType::Text(text, false),
+                })
+            }
             Some(XmlEvent::StartElement {
                 attributes,
                 namespace,
                 ..
             }) => Some(self.parse_regular_node(attributes, namespace)?),
-            _ => unreachable!(),
+            Some(
+                XmlEvent::StartDocument { .. }
+                | XmlEvent::Doctype { .. }
+                | XmlEvent::EndDocument
+                | XmlEvent::EndElement { .. },
+            )
+            | None => None,
         };
         Ok(node)
     }

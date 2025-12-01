@@ -16,7 +16,7 @@ fn remove_no_display(node: &Node) -> bool {
         Node::RegularNode { attributes, .. } => attributes
             .iter()
             .any(|attr| is_no_display(attr) || is_opacity_zero(attr)),
-        _ => false,
+        Node::ChildlessNode { .. } => false,
     }
 }
 
@@ -27,7 +27,7 @@ fn remove_circle(node: &Node) -> bool {
             attributes,
             ..
         } => find_and_convert_to_px(attributes, R_NAME).unwrap_or(0.) == 0.,
-        _ => false,
+        Node::RegularNode { .. } | Node::ChildlessNode { .. } => false,
     }
 }
 
@@ -43,7 +43,7 @@ fn remove_ellipse(node: &Node) -> bool {
 
             rx == Some(0.) || ry == Some(0.)
         }
-        _ => false,
+        Node::RegularNode { .. } | Node::ChildlessNode { .. } => false,
     }
 }
 
@@ -60,7 +60,7 @@ fn remove_zero_dimensions(node: &Node) -> bool {
 
             width == 0. || height == 0.
         }
-        _ => false,
+        Node::RegularNode { .. } | Node::ChildlessNode { .. } => false,
     }
 }
 
@@ -82,7 +82,7 @@ fn remove_empty_data(node: &Node) -> bool {
             attributes,
             ..
         } => is_empty_attr(attributes, POINTS_NAME),
-        _ => false,
+        Node::RegularNode { .. } | Node::ChildlessNode { .. } => false,
     }
 }
 
@@ -107,7 +107,7 @@ fn remove_hidden_elements_from_node(node: Node) -> Option<Node> {
             attributes,
             children: remove_hidden_elements(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     })
 }
 

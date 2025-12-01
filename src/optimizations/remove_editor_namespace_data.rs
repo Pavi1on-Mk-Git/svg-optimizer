@@ -37,7 +37,7 @@ fn remove_editor_namespace_data_from_node(node: Node) -> Option<Node> {
             attributes: attributes.filter_to_vec(has_editor_namespace_data),
             children: children.filter_map_to_vec(remove_editor_namespace_data_from_node),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

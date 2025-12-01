@@ -47,7 +47,7 @@ fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribut
             attributes: attributes.filter_to_vec(|attr| !common_attributes.contains(attr)),
             children,
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     })
 }
 
@@ -62,10 +62,11 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             let common_attributes = find_common_attributes(&children);
             let children = remove_common_attributes(children, &common_attributes);
 
-            attributes = attributes.filter_to_vec(|attr| {
-                common_attributes
+            // Remove any existing attributes that will be replaced by common attributes
+            attributes.retain(|attr| {
+                !common_attributes
                     .iter()
-                    .all(|common_attr| common_attr.name != attr.name)
+                    .any(|common_attr| common_attr.name == attr.name)
             });
             attributes.extend(common_attributes);
 
@@ -87,7 +88,7 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             attributes,
             children: extract_common_attributes(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 
@@ -162,6 +163,69 @@ mod tests {
         <circle cx="40" cy="40" r="25"/>
         <circle cx="60" cy="60" r="25"/>
         <circle cx="60" cy="60" r="25"/>
+        </g>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_extract_common_attributes_no_duplicate_attributes,
+        extract_common_attributes,
+        r#"
+        <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+        <g fill="white" stroke="red">
+        <circle cx="40" cy="40" r="25" fill="blue" stroke="red"/>
+        <circle cx="60" cy="60" r="25" fill="blue" stroke="red"/>
+        </g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
+        <g fill="blue" stroke="red">
+        <circle cx="40" cy="40" r="25"/>
+        <circle cx="60" cy="60" r="25"/>
+        </g>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_extract_common_attributes_with_duplicates_in_child,
+        extract_common_attributes,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <g class="parent">
+        <path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M10,10 L20,20"/>
+        <path class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid" d="M30,30 L40,40"/>
+        </g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <g class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid">
+        <path d="M10,10 L20,20"/>
+        <path d="M30,30 L40,40"/>
+        </g>
+        </svg>
+        "#
+    );
+
+    test_optimize!(
+        test_extract_common_attributes_preserves_parent_attributes,
+        extract_common_attributes,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <g class="parent" fill="red">
+        <circle class="edge-thickness-normal edge-pattern-solid" cx="10" cy="10" r="5"/>
+        <circle class="edge-thickness-normal edge-pattern-solid" cx="20" cy="20" r="5"/>
+        </g>
+        </svg>
+        "#,
+        r#"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <g fill="red" class="edge-thickness-normal edge-pattern-solid">
+        <circle cx="10" cy="10" r="5"/>
+        <circle cx="20" cy="20" r="5"/>
         </g>
         </svg>
         "#

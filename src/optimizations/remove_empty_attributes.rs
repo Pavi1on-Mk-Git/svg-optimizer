@@ -14,7 +14,7 @@ fn remove_empty_attributes_from_node(node: Node) -> Node {
             attributes: attributes.filter_to_vec(|attribute| !attribute.value.is_empty()),
             children: remove_empty_attributes(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 
