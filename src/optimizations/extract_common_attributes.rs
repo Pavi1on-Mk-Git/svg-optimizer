@@ -62,10 +62,11 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             let common_attributes = find_common_attributes(&children);
             let children = remove_common_attributes(children, &common_attributes);
 
-            attributes = attributes.filter_to_vec(|attr| {
-                common_attributes
+            // Remove any existing attributes that will be replaced by common attributes
+            attributes.retain(|attr| {
+                !common_attributes
                     .iter()
-                    .all(|common_attr| common_attr.name != attr.name)
+                    .any(|common_attr| common_attr.name == attr.name)
             });
             attributes.extend(common_attributes);
 
