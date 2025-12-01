@@ -17,7 +17,7 @@ fn remove_comments_from_node(node: Node) -> Option<Node> {
         Node::ChildlessNode {
             node_type: ChildlessNodeType::Comment(_),
         } => None,
-        childless_node => Some(childless_node),
+        childless_node @ Node::ChildlessNode { .. } => Some(childless_node),
     }
 }
 

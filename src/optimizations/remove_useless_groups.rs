@@ -55,7 +55,7 @@ fn remove_useless_groups_from_node(node: Node, used_ids: &[String]) -> Option<No
             children: children
                 .filter_map_to_vec(|child| remove_useless_groups_from_node(child, used_ids)),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

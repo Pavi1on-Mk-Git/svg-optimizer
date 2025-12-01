@@ -135,7 +135,7 @@ fn merge_transforms_in_node(node: Node, precision: usize) -> Node {
                 children: merge_transforms(children, precision),
             }
         }
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

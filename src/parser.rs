@@ -35,15 +35,15 @@ impl<R: Read> Parser<R> {
     fn next_event(&mut self) -> Result<()> {
         self.curr_event = match self.source.next()? {
             XmlEvent::EndDocument => None,
-            event @ XmlEvent::StartDocument { .. }
-            | event @ XmlEvent::ProcessingInstruction { .. }
-            | event @ XmlEvent::StartElement { .. }
-            | event @ XmlEvent::EndElement { .. }
-            | event @ XmlEvent::CData(_)
-            | event @ XmlEvent::Comment(_)
-            | event @ XmlEvent::Characters(_)
-            | event @ XmlEvent::Whitespace(_)
-            | event @ XmlEvent::Doctype { .. } => Some(event),
+            event @ (XmlEvent::StartDocument { .. }
+            | XmlEvent::ProcessingInstruction { .. }
+            | XmlEvent::StartElement { .. }
+            | XmlEvent::EndElement { .. }
+            | XmlEvent::CData(_)
+            | XmlEvent::Comment(_)
+            | XmlEvent::Characters(_)
+            | XmlEvent::Whitespace(_)
+            | XmlEvent::Doctype { .. }) => Some(event),
         };
         Ok(())
     }
@@ -67,7 +67,6 @@ impl<R: Read> Parser<R> {
         }
 
         let node = match self.curr_event.take() {
-            Some(XmlEvent::StartDocument { .. }) => None,
             Some(XmlEvent::ProcessingInstruction { name, data }) => Some(Node::ChildlessNode {
                 node_type: ChildlessNodeType::ProcessingInstruction(name, data),
             }),
@@ -77,7 +76,7 @@ impl<R: Read> Parser<R> {
             Some(XmlEvent::Comment(text)) => Some(Node::ChildlessNode {
                 node_type: ChildlessNodeType::Comment(text),
             }),
-            Some(XmlEvent::Characters(text)) | Some(XmlEvent::Whitespace(text)) => {
+            Some(XmlEvent::Characters(text) | XmlEvent::Whitespace(text)) => {
                 Some(Node::ChildlessNode {
                     node_type: ChildlessNodeType::Text(text, false),
                 })
@@ -87,9 +86,13 @@ impl<R: Read> Parser<R> {
                 namespace,
                 ..
             }) => Some(self.parse_regular_node(attributes, namespace)?),
-            Some(XmlEvent::Doctype { .. }) => None,
-            Some(XmlEvent::EndDocument) | None => None,
-            Some(XmlEvent::EndElement { .. }) => None,
+            Some(
+                XmlEvent::StartDocument { .. }
+                | XmlEvent::Doctype { .. }
+                | XmlEvent::EndDocument
+                | XmlEvent::EndElement { .. },
+            )
+            | None => None,
         };
         Ok(node)
     }

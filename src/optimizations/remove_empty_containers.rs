@@ -41,7 +41,7 @@ fn remove_empty_containers_from_node(node: Node) -> Option<Node> {
             attributes,
             children: remove_empty_containers(children),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

@@ -50,7 +50,7 @@ fn replace_ids_in_css(style_child: Node, id_map: &BTreeMap<String, String>) -> N
         } => Node::ChildlessNode {
             node_type: ChildlessNodeType::Text(replace_ids_in_text(text, id_map), is_cdata),
         },
-        other => other,
+        other @ (Node::RegularNode { .. } | Node::ChildlessNode { .. }) => other,
     }
 }
 
@@ -76,7 +76,7 @@ fn replace_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
                 children: children.map_to_vec(|child| shorten_func(child, id_map)),
             }
         }
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

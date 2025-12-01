@@ -57,7 +57,7 @@ fn remove_dimensions_from_node(node: Node) -> Node {
             attributes,
             children: remove_dimensions(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

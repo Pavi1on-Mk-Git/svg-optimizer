@@ -24,7 +24,7 @@ fn remove_whitespace_outside_tags_from_node(node: Node) -> Option<Node> {
             node_type: ChildlessNodeType::Text(text, is_cdata),
         }),
 
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

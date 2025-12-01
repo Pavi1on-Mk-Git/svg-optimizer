@@ -24,7 +24,7 @@ fn remove_useless_ids_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
                 .filter_to_vec(|attribute| !is_attribute_useless_id(attribute, id_usage_map)),
             children: children.map_to_vec(|child| remove_useless_ids_for_node(child, id_usage_map)),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 
