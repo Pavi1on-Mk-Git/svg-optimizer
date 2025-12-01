@@ -53,7 +53,7 @@ fn add_path_usages_in_node(node: &Node, path_usages: &mut Vec<(Node, u32)>) {
                 add_path_usages_in_node(child, path_usages);
             }
         }
-        _ => {}
+        Node::ChildlessNode { .. } => {}
     }
 }
 
@@ -154,7 +154,7 @@ fn merge_paths_for_node(
             attributes,
             children: children.map_to_vec(|child| merge_paths_for_node(child, paths, id_map)),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

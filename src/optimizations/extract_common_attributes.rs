@@ -47,7 +47,7 @@ fn remove_common_attributes(nodes: Vec<Node>, common_attributes: &[OwnedAttribut
             attributes: attributes.filter_to_vec(|attr| !common_attributes.contains(attr)),
             children,
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     })
 }
 
@@ -87,7 +87,7 @@ fn extract_common_attributes_from_node(node: Node) -> Node {
             attributes,
             children: extract_common_attributes(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

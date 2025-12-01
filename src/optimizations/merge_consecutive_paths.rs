@@ -37,7 +37,7 @@ fn merge_children_paths(node: Node) -> Node {
             attributes,
             children: merge_consecutive_paths(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

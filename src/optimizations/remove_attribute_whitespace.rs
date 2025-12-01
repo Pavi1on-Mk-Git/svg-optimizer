@@ -19,7 +19,7 @@ fn remove_attribute_whitespace_from_node(node: Node) -> Node {
             }),
             children: remove_attribute_whitespace(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 
