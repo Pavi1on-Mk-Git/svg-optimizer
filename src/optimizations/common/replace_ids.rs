@@ -19,7 +19,7 @@ fn replace_ids_in_attribute(
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
             if let Some((first, rest)) = attribute.value.split_once('#')
-                && first == "#"
+                && first == ""
                 && let Some(new_id) = id_map.get(rest)
             {
                 attribute.value = format!("#{new_id}");

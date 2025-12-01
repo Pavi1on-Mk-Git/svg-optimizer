@@ -49,7 +49,7 @@ fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
             if let Some((first, rest)) = attribute.value.split_once('#')
-                && first == "#"
+                && first == ""
                 && let Some(value_in_map) = id_map.get_mut(rest)
             {
                 *value_in_map = true;
