@@ -11,14 +11,15 @@ include = ["/src"]
 
 [lints.clippy]
 module_name_repetitions = "allow"
-match_wildcard_for_single_variants = "allow"
+match_wildcard_for_single_variants = "deny"
+wildcard_enum_match_arm = "deny"
 pedantic = { level = "warn", priority = -1 }
 
 [dependencies]
-anyhow = "1.0.95"
-clap = { version = "4.5.20", features = ["derive"] }
+anyhow = "1.0.100"
+clap = { version = "4.5.53", features = ["derive"] }
 itertools = "0.14.0"
-lazy-regex = "3.4.1"
-nalgebra = "0.33.2"
-rayon = "1.10.0"
-xml-rs = "0.8.24"
+lazy-regex = "3.4.2"
+nalgebra = "0.34.1"
+rayon = "1.11.0"
+xml-rs = "1.0.0"

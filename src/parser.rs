@@ -5,7 +5,7 @@ use xml::name::OwnedName;
 use xml::{
     attribute::OwnedAttribute,
     namespace::Namespace,
-    reader::{ParserConfig2, XmlEvent},
+    reader::{ParserConfig, XmlEvent},
     EventReader,
 };
 
@@ -21,7 +21,7 @@ pub(crate) struct Parser<R: Read> {
 impl<R: Read> Parser<R> {
     pub(crate) fn new(source: R) -> Result<Self> {
         let mut parser = Parser {
-            source: ParserConfig2::new()
+            source: ParserConfig::new()
                 .ignore_comments(false)
                 .whitespace_to_characters(true)
                 .ignore_root_level_whitespace(false)
@@ -35,7 +35,15 @@ impl<R: Read> Parser<R> {
     fn next_event(&mut self) -> Result<()> {
         self.curr_event = match self.source.next()? {
             XmlEvent::EndDocument => None,
-            event => Some(event),
+            event @ XmlEvent::StartDocument { .. }
+            | event @ XmlEvent::ProcessingInstruction { .. }
+            | event @ XmlEvent::StartElement { .. }
+            | event @ XmlEvent::EndElement { .. }
+            | event @ XmlEvent::CData(_)
+            | event @ XmlEvent::Comment(_)
+            | event @ XmlEvent::Characters(_)
+            | event @ XmlEvent::Whitespace(_)
+            | event @ XmlEvent::Doctype { .. } => Some(event),
         };
         Ok(())
     }
@@ -69,15 +77,19 @@ impl<R: Read> Parser<R> {
             Some(XmlEvent::Comment(text)) => Some(Node::ChildlessNode {
                 node_type: ChildlessNodeType::Comment(text),
             }),
-            Some(XmlEvent::Characters(text)) => Some(Node::ChildlessNode {
-                node_type: ChildlessNodeType::Text(text, false),
-            }),
+            Some(XmlEvent::Characters(text)) | Some(XmlEvent::Whitespace(text)) => {
+                Some(Node::ChildlessNode {
+                    node_type: ChildlessNodeType::Text(text, false),
+                })
+            }
             Some(XmlEvent::StartElement {
                 attributes,
                 namespace,
                 ..
             }) => Some(self.parse_regular_node(attributes, namespace)?),
-            _ => unreachable!(),
+            Some(XmlEvent::Doctype { .. }) => None,
+            Some(XmlEvent::EndDocument) | None => None,
+            Some(XmlEvent::EndElement { .. }) => None,
         };
         Ok(node)
     }
