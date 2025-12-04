@@ -130,7 +130,7 @@ mod tests {
 
         find_id_usage_in_attribute(&attribute, &mut id_map);
 
-        assert_eq!(*id_map.get("test-id").unwrap(), true);
+        assert!(*id_map.get("test-id").unwrap());
     }
 
     #[test]
@@ -145,8 +145,7 @@ mod tests {
 
         find_id_usage_in_attribute(&attribute, &mut id_map);
 
-        // Should not be marked as used since it doesn't start with #
-        assert_eq!(*id_map.get("test-id").unwrap(), false);
+        assert!(!*id_map.get("test-id").unwrap());
     }
 
     #[test]
@@ -161,6 +160,6 @@ mod tests {
 
         find_id_usage_in_attribute(&attribute, &mut id_map);
 
-        assert_eq!(*id_map.get("test-id").unwrap(), true);
+        assert!(*id_map.get("test-id").unwrap());
     }
 }

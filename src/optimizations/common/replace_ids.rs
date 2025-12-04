@@ -116,7 +116,6 @@ mod tests {
 
         let result = replace_ids_in_attribute(attribute, &id_map);
 
-        // Should not be replaced since it doesn't start with #
         assert_eq!(result.value, "http://example.com#old-id");
     }
 
