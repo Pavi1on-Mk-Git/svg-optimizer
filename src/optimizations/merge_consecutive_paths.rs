@@ -58,10 +58,10 @@ fn merge_path_len(fst_attrs: &[OwnedAttribute], snd_attrs: &mut [OwnedAttribute]
     let fst_path_len = find_and_convert_to_px(fst_attrs, PATH_LENGTH_NAME);
     let snd_path_len_attr = find_attribute_mut(snd_attrs, PATH_LENGTH_NAME);
 
-    if let (Some(fst_path_len), Some(snd_path_len_attr)) = (fst_path_len, snd_path_len_attr) {
-        if let Some(snd_path_len) = convert_to_px(snd_path_len_attr) {
-            *snd_path_len_attr = format!("{}", fst_path_len + snd_path_len);
-        }
+    if let (Some(fst_path_len), Some(snd_path_len_attr)) = (fst_path_len, snd_path_len_attr)
+        && let Some(snd_path_len) = convert_to_px(snd_path_len_attr)
+    {
+        *snd_path_len_attr = format!("{}", fst_path_len + snd_path_len);
     }
 }
 
