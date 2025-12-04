@@ -19,7 +19,7 @@ fn replace_ids_in_attribute(
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
             if let Some((first, rest)) = attribute.value.split_once('#')
-                && first == "#"
+                && first.is_empty()
                 && let Some(new_id) = id_map.get(rest)
             {
                 attribute.value = format!("#{new_id}");
@@ -82,4 +82,71 @@ fn replace_ids_for_node(node: Node, id_map: &BTreeMap<String, String>) -> Node {
 
 pub(crate) fn replace_ids(nodes: Vec<Node>, id_map: &BTreeMap<String, String>) -> Vec<Node> {
     nodes.map_to_vec(|node| replace_ids_for_node(node, id_map))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use xml::name::OwnedName;
+
+    #[test]
+    fn test_replace_ids_in_href_starting_with_hash() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("old-id".to_string(), "new-id".to_string());
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local(HREF_NAME),
+            value: "#old-id".to_string(),
+        };
+
+        let result = replace_ids_in_attribute(attribute, &id_map);
+
+        assert_eq!(result.value, "#new-id");
+    }
+
+    #[test]
+    fn test_replace_ids_in_href_not_starting_with_hash() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("old-id".to_string(), "new-id".to_string());
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local(HREF_NAME),
+            value: "http://example.com#old-id".to_string(),
+        };
+
+        let result = replace_ids_in_attribute(attribute, &id_map);
+
+        // Should not be replaced since it doesn't start with #
+        assert_eq!(result.value, "http://example.com#old-id");
+    }
+
+    #[test]
+    fn test_replace_ids_in_url_reference() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("old-id".to_string(), "new-id".to_string());
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local("fill"),
+            value: "url(#old-id)".to_string(),
+        };
+
+        let result = replace_ids_in_attribute(attribute, &id_map);
+
+        assert_eq!(result.value, "url(#new-id)");
+    }
+
+    #[test]
+    fn test_replace_id_attribute() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("old-id".to_string(), "new-id".to_string());
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local(ID_NAME),
+            value: "old-id".to_string(),
+        };
+
+        let result = replace_ids_in_attribute(attribute, &id_map);
+
+        assert_eq!(result.value, "new-id");
+    }
 }

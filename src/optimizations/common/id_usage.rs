@@ -49,7 +49,7 @@ fn find_id_usage_in_attribute(attribute: &OwnedAttribute, id_map: &mut BTreeMap<
     match attribute.name.local_name.as_str() {
         HREF_NAME => {
             if let Some((first, rest)) = attribute.value.split_once('#')
-                && first == "#"
+                && first.is_empty()
                 && let Some(value_in_map) = id_map.get_mut(rest)
             {
                 *value_in_map = true;
@@ -111,4 +111,56 @@ pub(crate) fn make_id_usage_map(nodes: &Vec<Node>) -> BTreeMap<String, bool> {
     }
 
     id_usage_map
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use xml::name::OwnedName;
+
+    #[test]
+    fn test_find_id_usage_with_href_starting_with_hash() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("test-id".to_string(), false);
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local(HREF_NAME),
+            value: "#test-id".to_string(),
+        };
+
+        find_id_usage_in_attribute(&attribute, &mut id_map);
+
+        assert_eq!(*id_map.get("test-id").unwrap(), true);
+    }
+
+    #[test]
+    fn test_find_id_usage_with_href_not_starting_with_hash() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("test-id".to_string(), false);
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local(HREF_NAME),
+            value: "http://example.com#test-id".to_string(),
+        };
+
+        find_id_usage_in_attribute(&attribute, &mut id_map);
+
+        // Should not be marked as used since it doesn't start with #
+        assert_eq!(*id_map.get("test-id").unwrap(), false);
+    }
+
+    #[test]
+    fn test_find_id_usage_with_url_reference() {
+        let mut id_map = BTreeMap::new();
+        id_map.insert("test-id".to_string(), false);
+
+        let attribute = OwnedAttribute {
+            name: OwnedName::local("fill"),
+            value: "url(#test-id)".to_string(),
+        };
+
+        find_id_usage_in_attribute(&attribute, &mut id_map);
+
+        assert_eq!(*id_map.get("test-id").unwrap(), true);
+    }
 }
