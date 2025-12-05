@@ -26,7 +26,7 @@ fn ellipses_to_circles_from_node(node: Node) -> Node {
             attributes,
             children: ellipses_to_circles(children),
         },
-        childless_node => childless_node,
+        childless_node @ Node::ChildlessNode { .. } => childless_node,
     }
 }
 

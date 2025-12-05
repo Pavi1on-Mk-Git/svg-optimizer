@@ -41,7 +41,7 @@ fn remove_empty_texts_from_node(node: Node) -> Option<Node> {
             attributes,
             children: remove_empty_texts(children),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

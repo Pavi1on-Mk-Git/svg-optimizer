@@ -7,7 +7,7 @@ fn is_used(node: &Node, id_usage_map: &BTreeMap<String, bool>) -> bool {
         Node::RegularNode { attributes, .. } => attributes
             .iter()
             .any(|attr| attr.name.local_name == ID_NAME && id_usage_map[&attr.value]),
-        _ => true,
+        Node::ChildlessNode { .. } => true,
     }
 }
 
@@ -43,7 +43,7 @@ fn remove_unused_defs_for_node(node: Node, id_usage_map: &BTreeMap<String, bool>
             children: children
                 .filter_map_to_vec(|node| remove_unused_defs_for_node(node, id_usage_map)),
         }),
-        other => Some(other),
+        other @ Node::ChildlessNode { .. } => Some(other),
     }
 }
 

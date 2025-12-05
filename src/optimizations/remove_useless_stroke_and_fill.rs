@@ -59,7 +59,7 @@ fn remove_useless_stroke_and_fill_from_node(node: Node) -> Node {
             attributes: remove_useless_stroke_and_fill_from_attributes(attributes),
             children: remove_useless_stroke_and_fill(children),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

@@ -26,7 +26,7 @@ fn round_floats_in_node(node: Node, precision: usize) -> Node {
             attributes: attributes.map_to_vec(|attr| round_floats_in_attribute(attr, precision)),
             children: children.map_to_vec(|child| round_floats_in_node(child, precision)),
         },
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 

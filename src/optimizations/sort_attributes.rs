@@ -17,7 +17,7 @@ fn sort_attributes_from_node(node: Node) -> Node {
                 children: sort_attributes(children),
             }
         }
-        other => other,
+        other @ Node::ChildlessNode { .. } => other,
     }
 }
 
